@@ -2,6 +2,8 @@
 
 ### *“Sun by day · Wind by night · Water at dusk”*
 
+![SANDHYA 2.1 - Gandhi Sagar 3D Digital Twin Preview](assets/preview.jpg)
+
 ---
 
 ## 📌 Executive Overview
