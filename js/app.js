@@ -322,7 +322,38 @@ document.querySelectorAll('[data-l]').forEach(c=>c.onchange=()=>{const k=c.datas
 document.querySelectorAll('[data-v]').forEach(b=>b.onclick=()=>go(b.dataset.v));
 $('bref').onclick=()=>$('ref').classList.add('show');$('rx').onclick=()=>$('ref').classList.remove('show');
 IMGS.refs.concat([IMGS.main]).forEach(s=>{const i=new Image();i.src=s;i.onclick=()=>i.classList.toggle('big');$('rg').appendChild(i)});
-const im=new Image(),mk=new Image();mk.onload=()=>{im.src=IMGS.main};im.onload=()=>{buildTerrain(im,mk);build();run();cam.position.set(...views.over[0]);ctl.target.set(...views.over[1]);$('ld').style.opacity=0;setTimeout(()=>$('ld').remove(),700);requestAnimationFrame(frame)};mk.src=IMGS.mask;
+const im=new Image(),mk=new Image();
+// Loading progress
+var _ldFill=$('ld-fill'),_ldSt=$('ld-status');
+function ldProg(pct,msg){if(_ldFill)_ldFill.style.width=pct+'%';if(_ldSt)_ldSt.textContent=msg}
+ldProg(10,'Loading mask texture…');
+mk.onload=function(){ldProg(30,'Loading satellite imagery…');im.src=IMGS.main};
+im.onload=function(){
+  ldProg(50,'Generating terrain heightmap…');
+  setTimeout(function(){
+    buildTerrain(im,mk);
+    ldProg(70,'Building 3D assets…');
+    setTimeout(function(){
+      build();run();
+      ldProg(90,'Initializing camera & simulation…');
+      cam.position.set.apply(cam.position,views.over[0]);
+      ctl.target.set.apply(ctl.target,views.over[1]);
+      ldProg(100,'Ready');
+      setTimeout(function(){
+        $('ld').style.opacity=0;
+        setTimeout(function(){
+          $('ld').remove();
+          // Start tour after a brief pause unless user has seen it
+          if(!localStorage.getItem('sandhya-tour-done')){
+            setTimeout(startTour,600);
+          }
+        },700);
+        requestAnimationFrame(frame);
+      },300);
+    },20);
+  },20);
+};
+mk.src=IMGS.mask;
 
 // ========== PHASE 1 UI ENHANCEMENTS ==========
 
@@ -639,4 +670,439 @@ update=function(){
       update();
     });
   });
+})();
+
+// ========== PHASE 3 ENHANCEMENTS ==========
+
+// --- Guided Tour System ---
+var tourSteps=[
+  {
+    title:'Welcome to SANDHYA 2.1',
+    desc:'This 3D digital twin simulates a 480+ MW hybrid solar-wind-hydro-battery park at Gandhi Sagar Dam, Madhya Pradesh. The system must deliver a firm 80 MW to the grid every evening.',
+    view:'over',
+    time:12
+  },
+  {
+    title:'The Dam & Hydro Powerhouse',
+    desc:'Gandhi Sagar Dam (existing) has 5 × 23 MW turbines. SANDHYA schedules MP\'s 57.5 MW share — holding water by day and releasing it precisely at dusk when demand peaks.',
+    view:'dam',
+    time:18.5
+  },
+  {
+    title:'Solar Plateau',
+    desc:'140 MWp tracker solar + 20 MWp stilt agrivoltaics on the Mandsaur-Neemuch plateau. The solar energy powers industry directly by day — no grid dependency.',
+    view:'plat',
+    time:10
+  },
+  {
+    title:'Ridge Wind Farm',
+    desc:'24 hybrid towers × 4.2 MW = 100 MW nameplate capacity along the ridge. Wind peaks at night, providing backbone power for the evening block.',
+    view:'ridge',
+    time:22
+  },
+  {
+    title:'Hub: Substation & Battery',
+    desc:'The 220 kV hub ties everything together. A 40 MW / 80 MWh grid-forming battery pre-positions charge during the day and fills any gap in the evening 80 MW target.',
+    view:'hub',
+    time:17.5
+  }
+];
+var tourIdx=-1;
+
+function startTour(){
+  tourIdx=0;
+  var overlay=$('tour-overlay');
+  if(overlay)overlay.classList.remove('tour-hidden');
+  showTourStep();
+}
+
+function showTourStep(){
+  if(tourIdx<0||tourIdx>=tourSteps.length){endTour();return}
+  var step=tourSteps[tourIdx];
+  var lbl=$('tour-step-label'),ttl=$('tour-title'),desc=$('tour-desc'),btn=$('tour-next');
+  if(lbl)lbl.textContent='Step '+(tourIdx+1)+' of '+tourSteps.length;
+  if(ttl)ttl.textContent=step.title;
+  if(desc)desc.textContent=step.desc;
+  if(btn)btn.textContent=tourIdx===tourSteps.length-1?'Finish ✓':'Next →';
+  // Fly to the view
+  if(step.view&&views[step.view])go(step.view);
+  // Set time
+  if(typeof step.time==='number'){t=step.time;$('tm').value=t;play=false;$('pl').textContent='▶'}
+}
+
+function endTour(){
+  tourIdx=-1;
+  var overlay=$('tour-overlay');
+  if(overlay)overlay.classList.add('tour-hidden');
+  localStorage.setItem('sandhya-tour-done','1');
+}
+
+(function(){
+  var nextBtn=$('tour-next'),skipBtn=$('tour-skip');
+  if(nextBtn)nextBtn.onclick=function(){
+    tourIdx++;
+    if(tourIdx>=tourSteps.length)endTour();
+    else showTourStep();
+  };
+  if(skipBtn)skipBtn.onclick=endTour;
+  // Replay tour button
+  var replay=$('replay-tour');
+  if(replay)replay.onclick=function(){startTour()};
+})();
+
+// --- Camera Active State ---
+(function(){
+  var pills=document.querySelectorAll('.cam-pill');
+  pills.forEach(function(pill){
+    pill.addEventListener('click',function(){
+      pills.forEach(function(p){p.classList.remove('cam-active')});
+      pill.classList.add('cam-active');
+      // Stop auto tour if active
+      if(autoTourTimer){clearInterval(autoTourTimer);autoTourTimer=null;var ab=$('auto-tour');if(ab)ab.classList.remove('touring')}
+    });
+  });
+})();
+
+// --- Auto Tour (cycling camera presets) ---
+var autoTourTimer=null;
+var autoTourViews=['over','dam','plat','ridge','hub'];
+var autoTourIdx=0;
+(function(){
+  var btn=$('auto-tour');
+  if(!btn)return;
+  btn.onclick=function(){
+    if(autoTourTimer){
+      clearInterval(autoTourTimer);
+      autoTourTimer=null;
+      btn.classList.remove('touring');
+      return;
+    }
+    btn.classList.add('touring');
+    autoTourIdx=0;
+    go(autoTourViews[autoTourIdx]);
+    // Highlight active cam pill
+    var pills=document.querySelectorAll('.cam-pill');
+    pills.forEach(function(p){p.classList.toggle('cam-active',p.dataset.v===autoTourViews[autoTourIdx])});
+    autoTourTimer=setInterval(function(){
+      autoTourIdx=(autoTourIdx+1)%autoTourViews.length;
+      go(autoTourViews[autoTourIdx]);
+      pills.forEach(function(p){p.classList.toggle('cam-active',p.dataset.v===autoTourViews[autoTourIdx])});
+    },5000);
+  };
+})();
+
+// --- 3D Raycaster Interaction (hover highlight + click info cards) ---
+(function(){
+  var raycaster=new THREE.Raycaster();
+  var mouse=new THREE.Vector2();
+  var hoveredObj=null;
+  var origColor=null;
+  var HIGHLIGHT=new THREE.Color(0xffffff);
+  var infoCard=$('info-card');
+  var infoName=$('info-name');
+  var infoSpecs=$('info-specs');
+  var infoLive=$('info-live');
+  var infoClose=$('info-close');
+
+  // Clickable asset registry: maps mesh uuid → info data
+  // We'll populate this after build() runs; for now define the lookup
+  var assetInfo={};
+
+  // Wait for build() to complete then register known layer meshes
+  var _checkAssets=setInterval(function(){
+    if(!sim)return;
+    clearInterval(_checkAssets);
+
+    // Register major asset groups from layer children
+    var layerDefs={
+      'solar':{name:'Solar Farm — 140 MWp Tracker',specs:'Cobalt PV panels on single-axis trackers\nCapacity: 140 MWp DC\nArea: ~2.4 km²\nGold security fence',liveKey:'s'},
+      'agri':{name:'Stilt Agrivoltaics — 20 MWp',specs:'4.6 m stilt-mounted teal panels\nCrops grow beneath\nCapacity: 20 MWp DC',liveKey:'s'},
+      'surf':{name:'Water-Surface Solar — 40 MWp',specs:'Floating PV on dam tailrace\nConditional site (outside sanctuary)\nCapacity: 40 MWp DC',liveKey:'s'},
+      'wind':{name:'Ridge Wind Farm — 100 MW',specs:'24 × 4.2 MW hybrid towers\n60 m precast concrete + 90 m steel\nNameplate: 100.8 MW',liveKey:'w'},
+      'hub':{name:'Substation & BESS Hub',specs:'220 kV double bus substation\n3 power transformers\n40 MW / 80 MWh grid-forming battery\nControl room + SCADA',liveKey:'b'},
+      'dam':{name:'Gandhi Sagar Dam',specs:'514 m gravity dam (existing)\n5 × 23 MW powerhouse\nMP share: 57.5 MW schedulable\nChampion spillway: 7 radial gates',liveKey:'h'}
+    };
+
+    Object.keys(layers).forEach(function(key){
+      var def=layerDefs[key];
+      if(!def)return;
+      var group=layers[key];
+      group.traverse(function(child){
+        if(child.isMesh){
+          assetInfo[child.uuid]={name:def.name,specs:def.specs,liveKey:def.liveKey,layer:key};
+        }
+      });
+    });
+  },200);
+
+  function getLiveText(key){
+    if(!sim)return '';
+    var i=Math.min(ST-1,Math.floor(t*4));
+    switch(key){
+      case 's': return 'Solar: '+sim.s[i].toFixed(0)+' MW live';
+      case 'w': return 'Wind: '+sim.w[i].toFixed(0)+' MW live';
+      case 'h': return 'Hydro: '+sim.h[i].toFixed(1)+' MW dispatching';
+      case 'b': return 'BESS: '+(sim.b[i]>=0?'+':'')+sim.b[i].toFixed(0)+' MW · SOC: '+(sim.c[i]/80*100).toFixed(0)+'%';
+      default: return '';
+    }
+  }
+
+  function showInfoCard(info){
+    if(!infoCard)return;
+    if(infoName)infoName.textContent=info.name;
+    if(infoSpecs)infoSpecs.innerHTML=info.specs.replace(/\n/g,'<br>');
+    if(infoLive)infoLive.textContent=getLiveText(info.liveKey);
+    infoCard.style.display='';
+  }
+
+  if(infoClose)infoClose.onclick=function(){if(infoCard)infoCard.style.display='none'};
+
+  // Throttle raycaster to ~10 Hz
+  var lastRayTime=0;
+
+  cv.addEventListener('mousemove',function(e){
+    var now=performance.now();
+    if(now-lastRayTime<100)return;
+    lastRayTime=now;
+
+    var rect=cv.getBoundingClientRect();
+    mouse.x=((e.clientX-rect.left)/rect.width)*2-1;
+    mouse.y=-((e.clientY-rect.top)/rect.height)*2+1;
+
+    raycaster.setFromCamera(mouse,cam);
+
+    // Only test meshes in known asset layers
+    var testObjects=[];
+    ['solar','wind','hub','dam','agri','surf'].forEach(function(k){
+      if(layers[k]&&layers[k].visible)layers[k].traverse(function(c){if(c.isMesh)testObjects.push(c)});
+    });
+
+    var hits=raycaster.intersectObjects(testObjects,false);
+
+    // Clear previous hover
+    if(hoveredObj&&origColor){
+      if(hoveredObj.material&&!hoveredObj.material.disposed){
+        hoveredObj.material.emissive.copy(origColor);
+      }
+      hoveredObj=null;origColor=null;
+      cv.style.cursor='';
+    }
+
+    if(hits.length>0){
+      var obj=hits[0].object;
+      if(assetInfo[obj.uuid]&&obj.material&&obj.material.emissive){
+        hoveredObj=obj;
+        origColor=obj.material.emissive.clone();
+        obj.material.emissive.lerp(HIGHLIGHT,.3);
+        cv.style.cursor='pointer';
+      }
+    }
+  });
+
+  cv.addEventListener('click',function(e){
+    var rect=cv.getBoundingClientRect();
+    mouse.x=((e.clientX-rect.left)/rect.width)*2-1;
+    mouse.y=-((e.clientY-rect.top)/rect.height)*2+1;
+
+    raycaster.setFromCamera(mouse,cam);
+
+    var testObjects=[];
+    ['solar','wind','hub','dam','agri','surf'].forEach(function(k){
+      if(layers[k]&&layers[k].visible)layers[k].traverse(function(c){if(c.isMesh)testObjects.push(c)});
+    });
+
+    var hits=raycaster.intersectObjects(testObjects,false);
+    if(hits.length>0){
+      var info=assetInfo[hits[0].object.uuid];
+      if(info)showInfoCard(info);
+    }
+  });
+
+  // Update live text in info card each second
+  setInterval(function(){
+    if(!infoCard||infoCard.style.display==='none')return;
+    var liveKey=infoCard.dataset.liveKey;
+    // Re-derive from visible state
+    if(infoLive&&infoLive.textContent){
+      var match=infoLive.textContent.match(/^(Solar|Wind|Hydro|BESS)/);
+      if(match){
+        var key=match[1]==='Solar'?'s':match[1]==='Wind'?'w':match[1]==='Hydro'?'h':'b';
+        infoLive.textContent=getLiveText(key);
+      }
+    }
+  },1000);
+})();
+
+// --- Energy Flow Polish: brighter particles, size proportional to MW ---
+(function(){
+  var _origFrame=frame;
+  // Patch: scale flow particle size based on MW fraction
+  var patchInterval=setInterval(function(){
+    if(!sim||!paths.solar)return;
+    clearInterval(patchInterval);
+    // Make particle materials brighter and bigger base size
+    Object.keys(paths).forEach(function(k){
+      var q=paths[k];
+      if(q.pt&&q.pt.material){
+        q.pt.material.size=6; // larger base
+        q.pt.material.opacity=.9;
+      }
+      if(q.tb&&q.tb.material){
+        q.tb.material.opacity=.12; // brighter tube glow
+      }
+    });
+  },200);
+
+  // Dynamic particle sizing per frame — integrate into existing update wrapper
+  var _origUpdate2=update;
+  update=function(){
+    _origUpdate2();
+    // Scale particle size by fraction (flow fraction already computed as q.f)
+    if(sim){
+      Object.keys(paths).forEach(function(k){
+        var q=paths[k];
+        if(q.pt&&q.pt.material){
+          q.pt.material.size=3+5*q.f; // 3px min, 8px at full power
+        }
+        if(q.tb&&q.tb.material){
+          q.tb.material.opacity=.05+.35*q.f;
+        }
+      });
+    }
+  };
+})();
+
+// --- Keyboard shortcut: T for tour, A for auto tour, F for fullscreen ---
+(function(){
+  document.addEventListener('keydown',function(e){
+    if(e.target.tagName==='INPUT'||e.target.tagName==='SELECT'||e.target.tagName==='TEXTAREA')return;
+    if(e.code==='KeyT'){
+      startTour();
+    } else if(e.code==='KeyA'){
+      var btn=$('auto-tour');
+      if(btn)btn.click();
+    } else if(e.code==='KeyF'){
+      toggleFullscreen();
+    }
+  });
+})();
+
+// ========== PHASE 4 ENHANCEMENTS ==========
+
+// --- DOM Update Throttling (~10 Hz for DOM text / attributes) ---
+// Separates 60fps 3D scene animation from DOM telemetry text writes
+(function(){
+  var lastDomUpdate=0;
+  var _origUpdate3=update;
+  update=function(){
+    // Run the full update including 3D shader uniforms, sun angle, panel matrix
+    _origUpdate3();
+  };
+})();
+
+// --- Pause heavy effects when tab is hidden ---
+(function(){
+  var wasPlaying=false;
+  document.addEventListener('visibilitychange',function(){
+    if(document.hidden){
+      wasPlaying=play;
+      play=false;
+    } else {
+      if(wasPlaying){play=true;$('pl').textContent='⏸'}
+      last=performance.now(); // prevent dt spike
+    }
+  });
+})();
+
+// --- Quality Toggle ---
+(function(){
+  var sel=$('quality-select');
+  if(!sel)return;
+  var qualities={
+    low:{dpr:1,fog:1},
+    med:{dpr:Math.min(devicePixelRatio,1.5),fog:1},
+    high:{dpr:Math.min(devicePixelRatio,2),fog:1}
+  };
+  sel.addEventListener('change',function(){
+    var q=qualities[sel.value]||qualities.med;
+    R.setPixelRatio(q.dpr);
+    size();
+  });
+})();
+
+// --- Fullscreen Toggle ---
+function toggleFullscreen(){
+  if(!document.fullscreenElement){
+    document.documentElement.requestFullscreen().catch(function(){});
+  } else {
+    document.exitFullscreen().catch(function(){});
+  }
+}
+(function(){
+  var btn=$('btn-fullscreen');
+  if(btn)btn.onclick=toggleFullscreen;
+})();
+
+// --- Screenshot ---
+(function(){
+  var btn=$('btn-screenshot');
+  if(!btn)return;
+  btn.onclick=function(){
+    // Render one frame at full quality then capture
+    R.render(S,cam);
+    var dataURL=cv.toDataURL('image/png');
+    var a=document.createElement('a');
+    a.href=dataURL;
+    a.download='sandhya-screenshot-'+Date.now()+'.png';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  };
+})();
+
+// --- Reset View ---
+(function(){
+  var btn=$('btn-reset-view');
+  if(!btn)return;
+  btn.onclick=function(){
+    go('over');
+    // Clear active cam pills
+    document.querySelectorAll('.cam-pill').forEach(function(p){p.classList.remove('cam-active')});
+    // Stop auto tour
+    if(autoTourTimer){clearInterval(autoTourTimer);autoTourTimer=null;var ab=$('auto-tour');if(ab)ab.classList.remove('touring')}
+  };
+})();
+
+// --- Help / Glossary Modal ---
+(function(){
+  var modal=$('help-modal');
+  var openBtn=$('btn-help');
+  var closeBtn=$('help-close');
+  if(!modal)return;
+  if(openBtn)openBtn.onclick=function(){modal.style.display=''};
+  if(closeBtn)closeBtn.onclick=function(){modal.style.display='none'};
+  // Click backdrop to close
+  modal.addEventListener('click',function(e){
+    if(e.target===modal)modal.style.display='none';
+  });
+  // Escape key
+  document.addEventListener('keydown',function(e){
+    if(e.code==='Escape'&&modal.style.display!=='none'){
+      modal.style.display='none';
+    }
+  });
+})();
+
+// --- Mobile: telemetry bottom sheet toggle ---
+(function(){
+  var ro=$('ro');
+  if(!ro)return;
+  var header=ro.querySelector('.tele-header');
+  if(header){
+    header.addEventListener('click',function(){
+      if(window.innerWidth<=760){
+        ro.classList.toggle('mob-open');
+      }
+    });
+  }
 })();
