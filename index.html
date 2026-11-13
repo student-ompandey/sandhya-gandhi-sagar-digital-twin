@@ -5,53 +5,219 @@
   <title>SANDHYA 2.1 · Gandhi Sagar 3D Digital Twin</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="description" content="3D Digital Twin and Renewable Energy Simulation of Gandhi Sagar Dam and Hybrid Solar-Wind-Hydro-Storage Park">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
   <!-- External CSS -->
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-<canvas id="c"></canvas><div class="tc" id="labc"></div><div class="tc" id="plcc"></div>
+<canvas id="c"></canvas>
+<div class="tc" id="labc"></div>
+<div class="tc" id="plcc"></div>
+
+<!-- Loading Screen -->
 <div id="ld">Draping satellite imagery on terrain…</div>
-<div class="p" id="ttl"><h1>SANDHYA 2.1 · Gandhi Sagar Digital Twin</h1><small>Sun by day · Wind by night · Water at dusk</small></div>
-<div class="p" id="ro">
-<h2>Live panel · <span id="clk">00:00</span></h2>
-<div class="r"><span>Solar → industry</span><b id="vs">0 MW</b></div>
-<div class="r"><span>Wind</span><b id="vw">0 MW</b></div>
-<div class="r"><span>MP hydro (57.5 MW share)</span><b id="vh">0 MW</b></div>
-<div class="r"><span>Battery (+ discharge)</span><b id="vb">0 MW</b></div>
-<div class="r"><span>Evening block delivered</span><b id="vd">0 / 80 MW</b></div>
-<div class="r"><span>Dam water saved</span><b id="vq">0 MWh</b></div><div class="bar"><i id="bq"></i></div>
-<div class="r"><span>Battery charge</span><b id="vc">0%</b></div><div class="bar"><i id="bc" style="background:var(--em)"></i></div>
-<div class="r"><span>Dam gates</span><b id="vg">–</b></div>
-<div class="r"><span>Reservoir level</span><b id="vl">–</b></div>
-<div class="r"><span>Block status</span><span id="st">–</span></div>
-<div class="r"><small>Today’s block reliability</small><b id="vr">–</b></div>
-<small>Design target 96.0% (365-day sim)</small>
+
+<!-- Title Bar -->
+<div class="panel" id="ttl">
+  <div>
+    <h1>SANDHYA 2.1 <span style="font-weight:400;opacity:.5">·</span> Gandhi Sagar</h1>
+    <small>Sun by day · Wind by night · Water at dusk</small>
+  </div>
+  <button id="theme-toggle" title="Toggle light / dark theme" aria-label="Toggle theme">◑</button>
 </div>
-<div class="p" id="ly"><h2>Layers</h2>
-<label><input type="checkbox" data-l="solar" checked>Tracker solar 140 MWp</label>
-<label><input type="checkbox" data-l="agri" checked>Stilt agrivoltaics 20 MWp</label>
-<label><input type="checkbox" data-l="surf" checked>Water-surface 40 MWp (cond.)</label>
-<label><input type="checkbox" data-l="wind" checked>24 wind turbines</label>
-<label><input type="checkbox" data-l="hub" checked>Substation + battery</label>
-<label><input type="checkbox" data-l="dam" checked>Dam + powerhouse</label>
-<label><input type="checkbox" data-l="flow" checked>Power / water flows</label>
-<label><input type="checkbox" data-l="sanct" checked>Sanctuary boundary</label>
-<label><input type="checkbox" data-l="line" checked>Transmission towers</label>
-<label><input type="checkbox" data-l="labc" checked>Asset tags</label>
-<label><input type="checkbox" data-l="plcc" checked>Place names</label>
+
+<!-- Telemetry Panel -->
+<div class="panel" id="ro">
+  <div class="tele-header">
+    <h2>Live Telemetry</h2>
+    <span class="clock" id="clk">00:00</span>
+  </div>
+
+  <!-- Generation -->
+  <div class="tele-section">
+    <div class="section-label">Generation</div>
+    <div class="tele-row">
+      <span class="tele-label"><span class="indicator" style="--c:var(--solar)"></span>Solar → Industry</span>
+      <b class="tele-value" id="vs">0 MW</b>
+    </div>
+    <div class="tele-row">
+      <span class="tele-label"><span class="indicator" style="--c:var(--wind)"></span>Wind</span>
+      <b class="tele-value" id="vw">0 MW</b>
+    </div>
+  </div>
+
+  <!-- Storage & Hydro -->
+  <div class="tele-section">
+    <div class="section-label">Storage &amp; Hydro</div>
+    <div class="tele-row">
+      <span class="tele-label"><span class="indicator" style="--c:var(--hydro)"></span>MP Hydro (57.5 MW)</span>
+      <b class="tele-value" id="vh">0 MW</b>
+    </div>
+    <div class="tele-row">
+      <span class="tele-label"><span class="indicator" style="--c:var(--bess)"></span>Battery</span>
+      <b class="tele-value" id="vb">0 MW</b>
+    </div>
+    <div class="soc-row">
+      <div class="soc-gauge-wrap">
+        <svg class="soc-gauge" viewBox="0 0 48 48">
+          <circle cx="24" cy="24" r="20" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="3"/>
+          <circle id="soc-arc" cx="24" cy="24" r="20" fill="none" stroke="var(--bess)" stroke-width="3"
+                  stroke-dasharray="0 126" stroke-linecap="round" transform="rotate(-90 24 24)"/>
+        </svg>
+        <span class="soc-text" id="vc">0%</span>
+      </div>
+      <div class="bar-wrap">
+        <span class="bar-label">Water saved</span>
+        <b class="tele-value" id="vq">0 MWh</b>
+        <div class="bar"><i id="bq"></i></div>
+      </div>
+    </div>
+    <div style="display:none"><div class="bar"><i id="bc" style="background:var(--bess)"></i></div></div>
+  </div>
+
+  <!-- Evening Block -->
+  <div class="tele-section">
+    <div class="section-label">Evening Block · 18:00–24:00</div>
+    <div class="tele-row">
+      <span class="tele-label">Delivered</span>
+      <b class="tele-value" id="vd">0 / 80 MW</b>
+    </div>
+    <div class="tele-row">
+      <span class="tele-label">Dam gates</span>
+      <b class="tele-value" id="vg">–</b>
+    </div>
+    <div class="tele-row">
+      <span class="tele-label">Reservoir</span>
+      <b class="tele-value" id="vl">–</b>
+    </div>
+    <div class="status-row">
+      <span class="badge" id="st" title="Current operating mode">–</span>
+    </div>
+  </div>
+
+  <div class="reliability-row">
+    <span class="tele-label" style="font-size:11px">Block reliability</span>
+    <b class="tele-value" id="vr">–</b>
+    <small class="text-dim">Target 96.0%</small>
+  </div>
 </div>
-<div class="p" id="cam"><button data-v="over">Overview</button><button data-v="dam">Dam</button><button data-v="plat">Plateau</button><button data-v="ridge">Ridge</button><button data-v="hub">Hub</button><button id="bref">Satellite refs</button></div>
-<div class="p" id="tl">
-<div class="row"><button id="pl">▶ Play</button><input type="range" id="tm" min="0" max="24" step="0.05" value="12"><select id="sp"><option value="0.5">0.5×</option><option value="1" selected>1×</option><option value="3">3×</option><option value="8">8×</option></select></div>
-<div class="row" style="margin-top:6px"><small>Season</small><select id="se"><option value="summer">Summer</option><option value="monsoon">Monsoon</option><option value="winter">Winter</option></select>
-<small>Cloud cover</small><input type="range" id="cl" min="0" max="1" step="0.05" value="0.1" style="max-width:110px"><small>Wind</small><input type="range" id="wi" min="0.4" max="1.6" step="0.05" value="1" style="max-width:110px"></div>
+
+<!-- Layer Panel -->
+<div class="panel" id="ly">
+  <div class="layer-header" id="ly-toggle">
+    <h2>Layers</h2>
+    <span class="chevron">▾</span>
+  </div>
+  <div class="layer-body" id="ly-body">
+    <div class="layer-actions">
+      <button id="ly-all" type="button">Show all</button>
+      <button id="ly-none" type="button">Hide all</button>
+    </div>
+    <label><input type="checkbox" data-l="solar" checked><span class="ly-dot" style="--c:var(--solar)"></span>Tracker solar 140 MWp</label>
+    <label><input type="checkbox" data-l="agri" checked><span class="ly-dot" style="--c:#eab308"></span>Stilt agrivoltaics 20 MWp</label>
+    <label><input type="checkbox" data-l="surf" checked><span class="ly-dot" style="--c:#38bdf8"></span>Water-surface 40 MWp</label>
+    <label><input type="checkbox" data-l="wind" checked><span class="ly-dot" style="--c:var(--wind)"></span>24 wind turbines</label>
+    <label><input type="checkbox" data-l="hub" checked><span class="ly-dot" style="--c:var(--bess)"></span>Substation + battery</label>
+    <label><input type="checkbox" data-l="dam" checked><span class="ly-dot" style="--c:var(--hydro)"></span>Dam + powerhouse</label>
+    <label><input type="checkbox" data-l="flow" checked><span class="ly-dot" style="--c:#f59e0b"></span>Power / water flows</label>
+    <label><input type="checkbox" data-l="sanct" checked><span class="ly-dot" style="--c:#10b981"></span>Sanctuary boundary</label>
+    <label><input type="checkbox" data-l="line" checked><span class="ly-dot" style="--c:#94a3b8"></span>Transmission towers</label>
+    <label><input type="checkbox" data-l="labc" checked><span class="ly-dot" style="--c:#cbd5e1"></span>Asset tags</label>
+    <label><input type="checkbox" data-l="plcc" checked><span class="ly-dot" style="--c:#a1a1aa"></span>Place names</label>
+  </div>
 </div>
+
+<!-- Dispatch Chart Panel -->
+<div class="panel" id="chart-panel">
+  <div class="chart-header">
+    <div class="chart-title-wrap">
+      <h2>24h Dispatch Profile</h2>
+      <span class="chart-badge" id="chart-target-badge">Target: 80 MW (18–24h)</span>
+    </div>
+    <div class="chart-legend">
+      <span class="leg-item"><span class="leg-box" style="--c:var(--solar)"></span>Solar</span>
+      <span class="leg-item"><span class="leg-box" style="--c:var(--wind)"></span>Wind</span>
+      <span class="leg-item"><span class="leg-box" style="--c:var(--hydro)"></span>Hydro</span>
+      <span class="leg-item"><span class="leg-box" style="--c:var(--bess)"></span>BESS</span>
+      <span class="leg-item"><span class="leg-line"></span>80 MW</span>
+    </div>
+  </div>
+  <div class="chart-canvas-wrap">
+    <canvas id="dispatch-canvas" width="460" height="120"></canvas>
+    <div id="chart-tooltip" class="chart-tip"></div>
+  </div>
+</div>
+
+<!-- Scenario Presets Panel -->
+<div class="panel" id="scenarios-panel">
+  <div class="scenarios-header">
+    <h2>Scenarios</h2>
+  </div>
+  <div class="scenario-chips">
+    <button class="pill sc-btn active" data-scenario="summer">Clear Summer</button>
+    <button class="pill sc-btn" data-scenario="monsoon">Monsoon Peak</button>
+    <button class="pill sc-btn" data-scenario="winter">Winter Calm</button>
+    <button class="pill sc-btn" data-scenario="stress">Stress Test</button>
+  </div>
+  <div class="scenario-summary" id="scenario-summary">
+    Summer clear day: optimal solar yield, stable evening block dispatch.
+  </div>
+</div>
+
+<!-- Camera Presets -->
+<div class="panel" id="cam">
+  <button class="pill" data-v="over">Overview</button>
+  <button class="pill" data-v="dam">Dam</button>
+  <button class="pill" data-v="plat">Plateau</button>
+  <button class="pill" data-v="ridge">Ridge</button>
+  <button class="pill" data-v="hub">Hub</button>
+  <button class="pill" id="bref">Satellite</button>
+</div>
+
+<!-- Timeline Bar -->
+<div class="panel" id="tl">
+  <div class="tl-main">
+    <button id="pl" aria-label="Play or Pause" title="Play / Pause (Space)">▶</button>
+    <div class="track-wrap">
+      <div class="track-bg"></div>
+      <div class="block-marker"></div>
+      <input type="range" id="tm" min="0" max="24" step="0.05" value="12" aria-label="Time of day">
+    </div>
+    <div class="speed-chips">
+      <button class="pill" data-speed="0.5">0.5×</button>
+      <button class="pill active" data-speed="1">1×</button>
+      <button class="pill" data-speed="3">3×</button>
+      <button class="pill" data-speed="8">8×</button>
+    </div>
+  </div>
+  <div class="tl-controls">
+    <div class="seg-ctrl">
+      <button class="seg-btn active" data-season="summer">☀ Summer</button>
+      <button class="seg-btn" data-season="monsoon">🌧 Monsoon</button>
+      <button class="seg-btn" data-season="winter">❄ Winter</button>
+    </div>
+    <div class="slider-group">
+      <label id="cl-label">Cloud 10%</label>
+      <input type="range" id="cl" min="0" max="1" step="0.05" value="0.1" aria-label="Cloud cover">
+    </div>
+    <div class="slider-group">
+      <label id="wi-label">Wind 1.0×</label>
+      <input type="range" id="wi" min="0.4" max="1.6" step="0.05" value="1" aria-label="Wind multiplier">
+    </div>
+  </div>
+  <input type="hidden" id="sp" value="1">
+  <input type="hidden" id="se" value="summer">
+</div>
+
+<!-- Reference Gallery -->
 <div id="ref"><button id="rx" style="position:sticky;top:0;margin-bottom:10px">✕ Close</button><div class="g" id="rg"></div></div>
 
   <!-- Three.js Libraries -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
-  
+
   <!-- Digital Twin Simulation & Visuals -->
   <script src="assets/textures.js"></script>
   <script src="js/app.js"></script>

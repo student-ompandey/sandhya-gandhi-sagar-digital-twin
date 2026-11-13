@@ -291,6 +291,18 @@ const seen=new Set(panels.map(p=>p.im));seen.forEach(im=>im.instanceMatrix.needs
 batt.forEach(m=>m.material.emissiveIntensity=.2+soc/60);lamps.forEach(m=>m.material.emissiveIntensity=el<.12?2.2:.05);pens.forEach(m=>m.material.emissiveIntensity=h/57.5*1.6);if(gauge)gauge.scale.y=.03+.97*sim.q[i]/sim.qmax;blinks.forEach(m=>m.visible=Math.floor(ph*1.3)%2===0);const sf=s/200;if(solMat){solMat.emissiveIntensity=.5+1.4*sf;solGlow.material.opacity=.05+.3*sf;solBeam.material.opacity=.03+.22*sf}if(solI)solI.textContent='☀ '+s.toFixed(0)+' MW live · cobalt rows · gold fence';if(sheetM){sheetM.visible=SC.mon>.3;sheetM.material.opacity=.3+.6*SC.mon*(.4+.6*clv)}if(foamM)foamM.material.opacity=.2+.75*h/57.5;if(wmat){wmat.uniforms.uDay.value=.15+.85*el;wmat.uniforms.uSun.value.copy(sun.position).normalize();wmat.uniforms.uSky.value.copy(S.background)}
 const fr={solar:s/200,wind:w/100,hydro:h/57.5,exp:(s+(ev?d:0)+(!ev?w:0))/220};
 Object.keys(paths).forEach(k=>{const q=paths[k];q.f=Math.min(1,fr[k]);if(k==='exp'){const c=ev?0x38d1ff:0xf5c542;q.pt.material.color.set(c);q.tb.material.color.set(c)}});
+// SOC gauge arc update
+var socArc=$('soc-arc');if(socArc){var circ=2*Math.PI*20;socArc.setAttribute('stroke-dasharray',(soc/100*circ)+' '+circ)}
+// Time-of-day accent shift
+var _a;if(t>=5&&t<8)_a='#f0a040';else if(t>=8&&t<16)_a='#f5c542';else if(t>=16&&t<19.5)_a=t<17.5?'#e87040':'#a78bfa';else _a='#38d1ff';
+document.documentElement.style.setProperty('--accent',_a);document.documentElement.style.setProperty('--accent-glow',_a+'26');
+// Status badge tooltips
+var _st=$('st'),_tips={'BLOCK MET':'Evening 80 MW target is being met fully','DEGRADED':'Delivery has fallen below the 80 MW target','PRE-POSITION':'Preparing battery and hydro for the evening block','SOLAR · WATER HELD':'Solar is active — dam water being conserved for evening','WIND NIGHT':'Wind energy powering through the night'};
+if(_st)_st.title=_tips[_st.textContent]||'';
+// Slider value labels
+var _clL=$('cl-label'),_wiL=$('wi-label');
+if(_clL)_clL.textContent='Cloud '+Math.round(+$('cl').value*100)+'%';
+if(_wiL)_wiL.textContent='Wind '+((+$('wi').value).toFixed(1))+'×';
 }
 let last=performance.now(),ph=0;
 function frame(n){requestAnimationFrame(frame);const dt=Math.min(.05,(n-last)/1000);last=n;ph+=dt;
@@ -303,11 +315,328 @@ if(sim&&wmat){const hn=sim.h[Math.min(ST-1,Math.floor(t*4))]/57.5;wmat.uniforms.
  if(riv){riv.ph+=dt*(.01+.05*hn);const a=riv.rp.geometry.attributes.position;for(let i=0;i<riv.RN;i++){const u=(i/riv.RN+riv.ph)%1;riv.rc.getPoint(u,pos);const lift=u<.46?wLvl*(1-Math.max(0,Math.min(1,(u-.41)/.05))):0;a.setXYZ(i,pos.x+Math.sin(i*7)*2.2,pos.y+lift,pos.z+Math.cos(i*5)*2.2)}a.needsUpdate=true}}animLife(dt);ctl.update();R.render(S,cam);proj()}
 function size(){const w=innerWidth,h=innerHeight;R.setSize(w,h,false);cam.aspect=w/h;cam.updateProjectionMatrix()}
 addEventListener('resize',size);size();
-$('tm').oninput=e=>{t=+e.target.value;play=false;$('pl').textContent='▶ Play'};
-$('pl').onclick=()=>{play=!play;$('pl').textContent=play?'❚❚ Pause':'▶ Play'};
+$('tm').oninput=e=>{t=+e.target.value;play=false;$('pl').textContent='▶'};
+$('pl').onclick=()=>{play=!play;$('pl').textContent=play?'⏸':'▶'};
 ['se','cl','wi'].forEach(i=>$(i).oninput=run);$('se').addEventListener('input',()=>{$('cl').value={summer:.1,monsoon:.85,winter:.3}[$('se').value];run()});
 document.querySelectorAll('[data-l]').forEach(c=>c.onchange=()=>{const k=c.dataset.l;if(k==='labc'||k==='plcc')$(k).style.display=c.checked?'':'none';if(k==='plcc')layers.vil.visible=c.checked;else layers[k].visible=c.checked;if(c.dataset.l==='surf')run()});
 document.querySelectorAll('[data-v]').forEach(b=>b.onclick=()=>go(b.dataset.v));
 $('bref').onclick=()=>$('ref').classList.add('show');$('rx').onclick=()=>$('ref').classList.remove('show');
 IMGS.refs.concat([IMGS.main]).forEach(s=>{const i=new Image();i.src=s;i.onclick=()=>i.classList.toggle('big');$('rg').appendChild(i)});
 const im=new Image(),mk=new Image();mk.onload=()=>{im.src=IMGS.main};im.onload=()=>{buildTerrain(im,mk);build();run();cam.position.set(...views.over[0]);ctl.target.set(...views.over[1]);$('ld').style.opacity=0;setTimeout(()=>$('ld').remove(),700);requestAnimationFrame(frame)};mk.src=IMGS.mask;
+
+// ========== PHASE 1 UI ENHANCEMENTS ==========
+
+// --- Theme toggle ---
+(function(){
+  var root=document.documentElement,btn=$('theme-toggle');
+  if(localStorage.getItem('sandhya-theme')==='light')root.setAttribute('data-theme','light');
+  if(btn)btn.onclick=function(){
+    var isLight=root.getAttribute('data-theme')==='light';
+    root.setAttribute('data-theme',isLight?'dark':'light');
+    localStorage.setItem('sandhya-theme',isLight?'dark':'light');
+  };
+})();
+
+// --- Speed pill buttons ---
+(function(){
+  var btns=document.querySelectorAll('[data-speed]');
+  btns.forEach(function(btn){
+    btn.addEventListener('click',function(){
+      $('sp').value=btn.dataset.speed;
+      btns.forEach(function(b){b.classList.remove('active')});
+      btn.classList.add('active');
+    });
+  });
+})();
+
+// --- Season segmented control ---
+(function(){
+  var btns=document.querySelectorAll('[data-season]');
+  btns.forEach(function(btn){
+    btn.addEventListener('click',function(){
+      $('se').value=btn.dataset.season;
+      btns.forEach(function(b){b.classList.remove('active')});
+      btn.classList.add('active');
+      $('se').dispatchEvent(new Event('input'));
+    });
+  });
+})();
+
+// --- Layer panel: show all / hide all / collapse ---
+(function(){
+  var allBtn=$('ly-all'),noneBtn=$('ly-none'),toggle=$('ly-toggle'),panel=$('ly');
+  var checks=document.querySelectorAll('#ly [data-l]');
+  if(allBtn)allBtn.onclick=function(){checks.forEach(function(c){if(!c.checked){c.checked=true;c.onchange&&c.onchange()}})};
+  if(noneBtn)noneBtn.onclick=function(){checks.forEach(function(c){if(c.checked){c.checked=false;c.onchange&&c.onchange()}})};
+  if(toggle)toggle.onclick=function(){panel.classList.toggle('ly-collapsed')};
+})();
+
+// --- Keyboard shortcuts ---
+(function(){
+  var viewKeys=['over','dam','plat','ridge','hub'];
+  document.addEventListener('keydown',function(e){
+    if(e.target.tagName==='INPUT'||e.target.tagName==='SELECT'||e.target.tagName==='TEXTAREA')return;
+    switch(e.code){
+      case 'Space':
+        e.preventDefault();
+        $('pl').click();
+        break;
+      case 'ArrowLeft':
+        e.preventDefault();
+        t=Math.max(0,t-0.25);$('tm').value=t;play=false;$('pl').textContent='▶';
+        break;
+      case 'ArrowRight':
+        e.preventDefault();
+        t=Math.min(24,t+0.25);$('tm').value=t;play=false;$('pl').textContent='▶';
+        break;
+      case 'Digit1':case 'Digit2':case 'Digit3':case 'Digit4':case 'Digit5':
+        var idx=parseInt(e.code.charAt(5))-1;
+        if(viewKeys[idx])go(viewKeys[idx]);
+        break;
+    }
+  });
+})();
+
+// --- Slider live labels ---
+$('cl').addEventListener('input',function(){var l=$('cl-label');if(l)l.textContent='Cloud '+Math.round(this.value*100)+'%'});
+$('wi').addEventListener('input',function(){var l=$('wi-label');if(l)l.textContent='Wind '+(+this.value).toFixed(1)+'×'});
+
+// ========== PHASE 2 ENHANCEMENTS ==========
+
+// --- 24h Dispatch Chart & Playhead ---
+var drawDispatchChart=(function(){
+  var cv=$('dispatch-canvas');
+  if(!cv)return function(){};
+  var ctx=cv.getContext('2d');
+  var tip=$('chart-tooltip');
+  var hoverStep=-1;
+
+  function render(){
+    if(!sim)return;
+    var w=cv.width,h=cv.height;
+    ctx.clearRect(0,0,w,h);
+
+    var padL=24,padR=8,padT=10,padB=18;
+    var chartW=w-padL-padR,chartH=h-padT-padB;
+    var maxMW=160;
+
+    // Grid lines
+    ctx.strokeStyle='rgba(255,255,255,0.06)';
+    ctx.lineWidth=1;
+    [40,80,120].forEach(function(val){
+      var y=padT+chartH*(1-val/maxMW);
+      ctx.beginPath();ctx.moveTo(padL,y);ctx.lineTo(w-padR,y);ctx.stroke();
+      ctx.fillStyle='rgba(255,255,255,0.3)';
+      ctx.font='9px JetBrains Mono, monospace';
+      ctx.textAlign='right';ctx.fillText(val,padL-4,y+3);
+    });
+
+    // 18:00 - 24:00 evening block highlight zone
+    var x18=padL+chartW*(18/24);
+    ctx.fillStyle='rgba(56,209,255,0.06)';
+    ctx.fillRect(x18,padT,chartW*(6/24),chartH);
+
+    // X-axis time marks
+    [0,6,12,18,24].forEach(function(hr){
+      var x=padL+chartW*(hr/24);
+      ctx.fillStyle='rgba(255,255,255,0.3)';
+      ctx.font='9px JetBrains Mono, monospace';
+      ctx.textAlign=hr===0?'left':(hr===24?'right':'center');
+      ctx.fillText(hr+':00',x,h-4);
+    });
+
+    // Build stacked layers for each of the 96 steps
+    // stack: Solar (bottom) -> Wind -> Hydro -> Battery discharge
+    var ptsS=[],ptsW=[],ptsH=[],ptsB=[];
+    for(var i=0;i<ST;i++){
+      var s=sim.s[i];
+      var w_val=sim.w[i];
+      var hy=sim.h[i];
+      var bt=Math.max(0,sim.b[i]); // only positive discharge on chart
+
+      var y0=0;
+      var y1=y0+s;
+      var y2=y1+w_val;
+      var y3=y2+hy;
+      var y4=y3+bt;
+
+      ptsS.push({s0:y0,s1:y1});
+      ptsW.push({s0:y1,s1:y2});
+      ptsH.push({s0:y2,s1:y3});
+      ptsB.push({s0:y3,s1:y4});
+    }
+
+    function drawArea(series,fillColor){
+      ctx.fillStyle=fillColor;
+      ctx.beginPath();
+      // Top line
+      for(var i=0;i<ST;i++){
+        var x=padL+chartW*(i/(ST-1));
+        var y=padT+chartH*(1-Math.min(series[i].s1,maxMW)/maxMW);
+        if(i===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);
+      }
+      // Bottom line back
+      for(var j=ST-1;j>=0;j--){
+        var bx=padL+chartW*(j/(ST-1));
+        var by=padT+chartH*(1-Math.min(series[j].s0,maxMW)/maxMW);
+        ctx.lineTo(bx,by);
+      }
+      ctx.closePath();
+      ctx.fill();
+    }
+
+    drawArea(ptsS,'rgba(245,197,66,0.65)');  // Solar (gold)
+    drawArea(ptsW,'rgba(56,209,255,0.55)');  // Wind (cyan)
+    drawArea(ptsH,'rgba(45,212,191,0.60)');  // Hydro (teal)
+    drawArea(ptsB,'rgba(167,139,250,0.70)'); // BESS (violet)
+
+    // 80 MW Target dashed line during evening block (18:00 - 24:00)
+    var y80=padT+chartH*(1-80/maxMW);
+    ctx.save();
+    ctx.setLineDash([4,3]);
+    ctx.strokeStyle='#f87171';
+    ctx.lineWidth=1.5;
+    ctx.beginPath();
+    ctx.moveTo(x18,y80);
+    ctx.lineTo(w-padR,y80);
+    ctx.stroke();
+    ctx.restore();
+
+    // Moving playhead synced with t
+    var curX=padL+chartW*(t/24);
+    ctx.strokeStyle='rgba(255,255,255,0.85)';
+    ctx.lineWidth=1.5;
+    ctx.beginPath();
+    ctx.moveTo(curX,padT);
+    ctx.lineTo(curX,padT+chartH);
+    ctx.stroke();
+
+    // Playhead glowing pip
+    ctx.fillStyle='var(--accent)';
+    ctx.beginPath();
+    ctx.arc(curX,padT,3.5,0,Math.PI*2);
+    ctx.fill();
+
+    // Hover line & tooltip
+    if(hoverStep>=0&&hoverStep<ST){
+      var hX=padL+chartW*(hoverStep/(ST-1));
+      ctx.strokeStyle='rgba(255,255,255,0.4)';
+      ctx.lineWidth=1;
+      ctx.setLineDash([2,2]);
+      ctx.beginPath();
+      ctx.moveTo(hX,padT);
+      ctx.lineTo(hX,padT+chartH);
+      ctx.stroke();
+      ctx.setLineDash([]);
+    }
+  }
+
+  // Hover interaction
+  cv.addEventListener('mousemove',function(e){
+    if(!sim)return;
+    var rect=cv.getBoundingClientRect();
+    var x=e.clientX-rect.left;
+    var scaleX=cv.width/rect.width;
+    var canvasX=x*scaleX;
+    var padL=24,padR=8;
+    var chartW=cv.width-padL-padR;
+    var ratio=(canvasX-padL)/chartW;
+    ratio=Math.max(0,Math.min(1,ratio));
+    hoverStep=Math.round(ratio*(ST-1));
+
+    var hr=Math.floor(hoverStep/4);
+    var mn=(hoverStep%4)*15;
+    var timeStr=String(hr).padStart(2,'0')+':'+String(mn).padStart(2,'0');
+
+    var s=sim.s[hoverStep].toFixed(0);
+    var w_val=sim.w[hoverStep].toFixed(0);
+    var hy=sim.h[hoverStep].toFixed(1);
+    var bt=sim.b[hoverStep].toFixed(0);
+    var dl=sim.d[hoverStep].toFixed(0);
+
+    tip.style.display='block';
+    tip.innerHTML='<b>'+timeStr+'</b> · Sol: '+s+' · Wnd: '+w_val+' · Hyd: '+hy+' · Bat: '+bt+(hoverStep>=72?' | Deliv: <b>'+dl+'/80</b>':'');
+    render();
+  });
+
+  cv.addEventListener('mouseleave',function(){
+    hoverStep=-1;
+    if(tip)tip.style.display='none';
+    render();
+  });
+
+  cv.addEventListener('click',function(e){
+    if(hoverStep>=0){
+      t=hoverStep/4;
+      $('tm').value=t;
+      play=false;
+      $('pl').textContent='▶';
+      update();
+    }
+  });
+
+  return render;
+})();
+
+// Call drawDispatchChart inside update()
+var _origUpdate=update;
+update=function(){
+  _origUpdate();
+  if(drawDispatchChart)drawDispatchChart();
+};
+
+// --- Scenario Presets Logic ---
+(function(){
+  var scenarios={
+    summer:{
+      season:'summer',cloud:0.10,wind:1.0,
+      summary:'Clear summer day: peak solar generation, daytime hydro conservation, stable 80 MW evening block.'
+    },
+    monsoon:{
+      season:'monsoon',cloud:0.85,wind:1.35,
+      summary:'Monsoon week: heavy cloud cover limits solar; strong wind & full reservoir allow high hydro dispatch.'
+    },
+    winter:{
+      season:'winter',cloud:0.30,wind:0.60,
+      summary:'Winter calm: moderate solar, weak wind resource; battery pre-positioning critical for evening firming.'
+    },
+    stress:{
+      season:'winter',cloud:0.55,wind:0.40,
+      summary:'Stress test: low wind (0.4×) and high winter clouds; tests battery depletion and hydro limits.'
+    }
+  };
+
+  var btns=document.querySelectorAll('.sc-btn');
+  var sumEl=$('scenario-summary');
+
+  btns.forEach(function(btn){
+    btn.addEventListener('click',function(){
+      var sc=scenarios[btn.dataset.scenario];
+      if(!sc)return;
+
+      btns.forEach(function(b){b.classList.remove('active')});
+      btn.classList.add('active');
+
+      // Update Season segmented button UI
+      $('se').value=sc.season;
+      var sBtns=document.querySelectorAll('[data-season]');
+      sBtns.forEach(function(b){b.classList.toggle('active',b.dataset.season===sc.season)});
+
+      // Update sliders
+      $('cl').value=sc.cloud;
+      $('wi').value=sc.wind;
+
+      // Update slider live labels
+      var _clL=$('cl-label'),_wiL=$('wi-label');
+      if(_clL)_clL.textContent='Cloud '+Math.round(sc.cloud*100)+'%';
+      if(_wiL)_wiL.textContent='Wind '+sc.wind.toFixed(1)+'×';
+
+      // Summary text
+      if(sumEl)sumEl.textContent=sc.summary;
+
+      // Re-run simulation
+      run();
+      update();
+    });
+  });
+})();
