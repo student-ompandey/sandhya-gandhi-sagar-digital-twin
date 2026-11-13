@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>SANDHYA 2.1 · Gandhi Sagar 3D Digital Twin</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="description" content="3D Digital Twin and Renewable Energy Simulation of Gandhi Sagar Dam and Hybrid Solar-Wind-Hydro-Storage Park">
+  <!-- External CSS -->
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<canvas id="c"></canvas><div class="tc" id="labc"></div><div class="tc" id="plcc"></div>
+<div id="ld">Draping satellite imagery on terrain…</div>
+<div class="p" id="ttl"><h1>SANDHYA 2.1 · Gandhi Sagar Digital Twin</h1><small>Sun by day · Wind by night · Water at dusk</small></div>
+<div class="p" id="ro">
+<h2>Live panel · <span id="clk">00:00</span></h2>
+<div class="r"><span>Solar → industry</span><b id="vs">0 MW</b></div>
+<div class="r"><span>Wind</span><b id="vw">0 MW</b></div>
+<div class="r"><span>MP hydro (57.5 MW share)</span><b id="vh">0 MW</b></div>
+<div class="r"><span>Battery (+ discharge)</span><b id="vb">0 MW</b></div>
+<div class="r"><span>Evening block delivered</span><b id="vd">0 / 80 MW</b></div>
+<div class="r"><span>Dam water saved</span><b id="vq">0 MWh</b></div><div class="bar"><i id="bq"></i></div>
+<div class="r"><span>Battery charge</span><b id="vc">0%</b></div><div class="bar"><i id="bc" style="background:var(--em)"></i></div>
+<div class="r"><span>Dam gates</span><b id="vg">–</b></div>
+<div class="r"><span>Reservoir level</span><b id="vl">–</b></div>
+<div class="r"><span>Block status</span><span id="st">–</span></div>
+<div class="r"><small>Today’s block reliability</small><b id="vr">–</b></div>
+<small>Design target 96.0% (365-day sim)</small>
+</div>
+<div class="p" id="ly"><h2>Layers</h2>
+<label><input type="checkbox" data-l="solar" checked>Tracker solar 140 MWp</label>
+<label><input type="checkbox" data-l="agri" checked>Stilt agrivoltaics 20 MWp</label>
+<label><input type="checkbox" data-l="surf" checked>Water-surface 40 MWp (cond.)</label>
+<label><input type="checkbox" data-l="wind" checked>24 wind turbines</label>
+<label><input type="checkbox" data-l="hub" checked>Substation + battery</label>
+<label><input type="checkbox" data-l="dam" checked>Dam + powerhouse</label>
+<label><input type="checkbox" data-l="flow" checked>Power / water flows</label>
+<label><input type="checkbox" data-l="sanct" checked>Sanctuary boundary</label>
+<label><input type="checkbox" data-l="line" checked>Transmission towers</label>
+<label><input type="checkbox" data-l="labc" checked>Asset tags</label>
+<label><input type="checkbox" data-l="plcc" checked>Place names</label>
+</div>
+<div class="p" id="cam"><button data-v="over">Overview</button><button data-v="dam">Dam</button><button data-v="plat">Plateau</button><button data-v="ridge">Ridge</button><button data-v="hub">Hub</button><button id="bref">Satellite refs</button></div>
+<div class="p" id="tl">
+<div class="row"><button id="pl">▶ Play</button><input type="range" id="tm" min="0" max="24" step="0.05" value="12"><select id="sp"><option value="0.5">0.5×</option><option value="1" selected>1×</option><option value="3">3×</option><option value="8">8×</option></select></div>
+<div class="row" style="margin-top:6px"><small>Season</small><select id="se"><option value="summer">Summer</option><option value="monsoon">Monsoon</option><option value="winter">Winter</option></select>
+<small>Cloud cover</small><input type="range" id="cl" min="0" max="1" step="0.05" value="0.1" style="max-width:110px"><small>Wind</small><input type="range" id="wi" min="0.4" max="1.6" step="0.05" value="1" style="max-width:110px"></div>
+</div>
+<div id="ref"><button id="rx" style="position:sticky;top:0;margin-bottom:10px">✕ Close</button><div class="g" id="rg"></div></div>
+
+  <!-- Three.js Libraries -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+  
+  <!-- Digital Twin Simulation & Visuals -->
+  <script src="assets/textures.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

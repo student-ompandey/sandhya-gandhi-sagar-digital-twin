@@ -1,0 +1,26 @@
+{
+  "name": "sandhya-gandhi-sagar-digital-twin",
+  "version": "2.1.0",
+  "description": "3D Digital Twin and Renewable Energy Simulation for Gandhi Sagar Hybrid Park (Solar, Wind, Hydro & BESS)",
+  "main": "index.html",
+  "scripts": {
+    "start": "npx serve . -l 3000",
+    "dev": "npx live-server --port=3000"
+  },
+  "keywords": [
+    "threejs",
+    "webgl",
+    "digital-twin",
+    "renewable-energy",
+    "solar",
+    "wind-energy",
+    "hydro-electric",
+    "battery-storage",
+    "bess",
+    "simulation",
+    "gandhi-sagar"
+  ],
+  "author": "SANDHYA Project Contributors",
+  "license": "MIT"
+}
+
