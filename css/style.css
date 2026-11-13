@@ -350,18 +350,72 @@ input[type=range]::-moz-range-track{height:6px;border-radius:4px;background:rgba
 #tour-spotlight{
   position:absolute;inset:0;
   background:rgba(0,0,0,.6);
-  transition:opacity .3s var(--ease);
+  transition:opacity .6s var(--ease);
 }
 #tour-card{
   position:absolute;right:24px;top:50%;transform:translateY(-50%);
-  width:300px;z-index:21;
+  width:320px;z-index:21;
   padding:var(--sp-4) var(--sp-5);
+  opacity: 1;
+  transition: opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1), transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: opacity, transform;
+}
+#tour-card.card-enter{
+  opacity: 0;
+  transform: translateY(-50%) translateX(28px) scale(0.97);
 }
 .tour-step-label{font-size:9px;text-transform:uppercase;letter-spacing:.1em;color:var(--text-3);font-weight:600;margin-bottom:var(--sp-1)}
 .tour-title{font-size:16px;font-weight:700;margin-bottom:var(--sp-2);line-height:1.3;color:var(--text)}
 .tour-desc{font-size:12px;color:var(--text-2);line-height:1.5;margin-bottom:var(--sp-4)}
 .tour-actions{display:flex;gap:var(--sp-2);justify-content:flex-end}
 .tour-actions .pill{padding:6px 16px;font-size:12px}
+
+/* --- Location Banner (Cinematic transition toast) --- */
+#loc-banner{
+  position:fixed;
+  top:max(20px,env(safe-area-inset-top,0px) + 20px);
+  left:50%;
+  transform:translateX(-50%) translateY(0);
+  z-index:15;
+  pointer-events:none;
+  opacity:1;
+  transition: opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1), transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+#loc-banner.loc-banner-hidden{
+  opacity:0;
+  transform:translateX(-50%) translateY(-14px);
+}
+.loc-banner-inner{
+  background: rgba(9, 16, 23, 0.88);
+  border: 1px solid var(--surface-border);
+  border-top: 2px solid var(--accent);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  padding: 8px 24px 10px 24px;
+  border-radius: var(--r-pill);
+  text-align: center;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.45);
+}
+.loc-tag{
+  font-size: 9px;
+  letter-spacing: .2em;
+  font-weight: 700;
+  color: var(--accent);
+  text-transform: uppercase;
+}
+.loc-name{
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: -0.01em;
+  margin-top: 1px;
+}
+.loc-detail{
+  font-size: 10px;
+  color: var(--text-2);
+  margin-top: 1px;
+  font-family: var(--mono);
+}
 
 /* --- 3D Info Card --- */
 .info-card{
@@ -407,10 +461,10 @@ input[type=range]::-moz-range-track{height:6px;border-radius:4px;background:rgba
   white-space:nowrap;pointer-events:auto;cursor:pointer;
   line-height:1.3;box-shadow:var(--shadow-sm);margin-top:-18px;
   backdrop-filter:blur(8px);
-  transition:transform var(--dur) var(--ease), opacity var(--dur) var(--ease);
+  will-change: transform, opacity;
   font-size:12px;
 }
-.tg:hover{transform:translateY(-2px);box-shadow:var(--shadow)}
+.tg:hover{box-shadow:var(--shadow)}
 .tg b{display:block;font-weight:600}
 .tg i{display:block;font-style:normal;font-size:.82em;opacity:.72}
 .tg::after{content:"";position:absolute;left:50%;top:100%;width:1px;height:18px;background:var(--c)}

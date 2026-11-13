@@ -86,9 +86,84 @@ if(smoke){const a=smoke.geometry.attributes.position,o=smoke.userData.o;for(let 
 const gy=(x,z)=>Math.max(HM(x,z),WY);
 const glow=(()=>{const c=document.createElement('canvas');c.width=c.height=64;const g=c.getContext('2d'),r=g.createRadialGradient(32,32,0,32,32,32);r.addColorStop(0,'#fff');r.addColorStop(.3,'rgba(255,255,255,.7)');r.addColorStop(1,'rgba(255,255,255,0)');g.fillStyle=r;g.fillRect(0,0,64,64);return new THREE.CanvasTexture(c)})();
 function tag(t,s,col,x,y,z,plc){const e=document.createElement('div');e.className='tg'+(plc?' pl':'');e.style.setProperty('--c',col);e.innerHTML='<b>'+t+'</b>'+(s?'<i>'+s+'</i>':'');$(plc?'plcc':'labc').appendChild(e);const v=new THREE.Vector3(x,plc?y:Math.max(y,gy(x,z)+9),z);e.onclick=()=>fly(v);TG.push({e,v,plc});return e}
-function fly(v){tw={t:0,p0:cam.position.clone(),t0:ctl.target.clone(),p1:v.clone().add(new THREE.Vector3(45,38,55)),t1:v.clone().setY(Math.max(0,v.y-12))}}
+function fly(v){
+  const p1 = v.clone().add(new THREE.Vector3(45,38,55));
+  const t1 = v.clone().setY(Math.max(0,v.y-12));
+  tw = {
+    elapsed: 0,
+    duration: 1.8,
+    p0: cam.position.clone(),
+    t0: ctl.target.clone(),
+    p1: p1,
+    t1: t1,
+    key: 'custom'
+  };
+}
 const pq=new THREE.Vector3();
-function proj(){const w=innerWidth,h=innerHeight;TG.forEach(o=>{pq.copy(o.v).project(cam);const d=cam.position.distanceTo(o.v),ok=pq.z<1&&Math.abs(pq.x)<1.1&&Math.abs(pq.y)<1.1&&(!o.plc||d<700);o.e.style.display=ok?'':'none';if(ok){o.e.style.transform='translate('+((pq.x*.5+.5)*w)+'px,'+((-pq.y*.5+.5)*h)+'px) translate(-50%,-100%)';o.e.style.zIndex=Math.round(3000-d);o.e.style.fontSize=(d>480?10:12)+'px'}})}
+function proj(){
+  const w=innerWidth,h=innerHeight;
+  // Compute distance from camera to controls target (focal point)
+  const camDist = cam.position.distanceTo(ctl.target);
+  
+  // Sort candidates by importance and distance to avoid overlapping and clutter
+  const rendered = [];
+  
+  TG.forEach(o=>{
+    pq.copy(o.v).project(cam);
+    const d=cam.position.distanceTo(o.v);
+    
+    // Visibility rules:
+    // 1. Must be in front of camera (pq.z < 1) and within screen frustum bounds
+    // 2. Hide place tags if too far (> 520px) or if zoomed too far out
+    // 3. Hide asset tags if too distant (> 750px)
+    const inFrustum = pq.z < 1 && Math.abs(pq.x) < 0.95 && Math.abs(pq.y) < 0.92;
+    const maxDist = o.plc ? 500 : 700;
+    let ok = inFrustum && d < maxDist;
+    
+    // If zoomed in close to an area (camDist < 240), de-clutter background distant tags
+    if(ok && camDist < 240 && d > camDist * 1.85){
+      ok = false;
+    }
+
+    if(!ok){
+      o.e.style.display='none';
+      return;
+    }
+
+    // Screen pixel position
+    const sx = (pq.x * 0.5 + 0.5) * w;
+    const sy = (-pq.y * 0.5 + 0.5) * h;
+
+    // Check collision with already rendered tags to prevent overlapping vibration
+    // Use collision box approx 140px wide by 38px tall
+    let overlap = false;
+    for(let i=0; i<rendered.length; i++){
+      const r = rendered[i];
+      if(Math.abs(sx - r.x) < 145 && Math.abs(sy - r.y) < 36){
+        // There is an overlap; prefer the closer one
+        if(d >= r.d){
+          overlap = true;
+          break;
+        }
+      }
+    }
+
+    if(overlap){
+      o.e.style.display='none';
+      return;
+    }
+
+    rendered.push({x: sx, y: sy, d: d, el: o.e});
+    o.e.style.display='';
+    o.e.style.transform='translate3d('+Math.round(sx)+'px,'+Math.round(sy)+'px,0) translate(-50%,-100%)';
+    o.e.style.zIndex=Math.max(1, Math.round(3000-d));
+    o.e.style.fontSize=(d>460?10:12)+'px';
+    // Smooth opacity based on distance
+    const fadeStart = maxDist * 0.72;
+    const opacity = d > fadeStart ? Math.max(0, 1 - (d - fadeStart) / (maxDist - fadeStart)) : 1;
+    o.e.style.opacity = opacity.toFixed(2);
+  });
+}
 const fence=(r,c)=>{const p=[[r[0]-3,r[1]-3],[r[2]+3,r[1]-3],[r[2]+3,r[3]+3],[r[0]-3,r[3]+3]],v=[];for(let k=0;k<4;k++)for(let t=0;t<24;t++){const a=p[k],b=p[(k+1)%4],x=a[0]+(b[0]-a[0])*t/24,z=a[1]+(b[1]-a[1])*t/24;v.push(new THREE.Vector3(x,gy(x,z)+1.1,z))}return new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(v,true),220,.4,6,true),new THREE.MeshBasicMaterial({color:c}))};
 const ptex=(c1,c2,gl)=>{const c=document.createElement('canvas');c.width=64;c.height=512;const g=c.getContext('2d');g.fillStyle=c1;g.fillRect(0,0,64,512);g.strokeStyle=c2;g.lineWidth=2;for(let y=0;y<=512;y+=36){g.beginPath();g.moveTo(0,y);g.lineTo(64,y);g.stroke()}for(let x=0;x<=64;x+=21){g.beginPath();g.moveTo(x,0);g.lineTo(x,512);g.stroke()}g.strokeStyle=gl;g.lineWidth=7;g.strokeRect(0,0,64,512);const t=new THREE.CanvasTexture(c);t.anisotropy=8;t.encoding=THREE.sRGBEncoding;return t};
 const bent=len=>{const g=new THREE.BoxGeometry(2.6,.22,len,8,1,14),p=g.attributes.position;for(let i=0;i<p.count;i++){const x=p.getX(i),z=p.getZ(i);p.setY(i,p.getY(i)+.2*(1-(x/1.3)*(x/1.3))+.05*Math.sin(z/len*Math.PI*8))}g.computeVertexNormals();return g};
@@ -272,8 +347,72 @@ for(let i=0;i<ST;i++){const h=i/4,w=wind(h),ev=h>=18;let hy=0,bt=0,dl=0;
 a.q=a.q.map(x=>x-mn);a.qmax=Math.max(...a.q,1);a.rel=a.d.slice(72).reduce((x,y)=>x+y,0)/(80*24);sim=a}
 // ---------- UI / LOOP ----------
 let t=12,play=false,tw=null;const dummy=new THREE.Object3D(),pos=new THREE.Vector3();
-const views={over:[[-40,330,380],[80,0,40]],dam:[[-85,55,45],[-12,4,-20]],plat:[[140,95,290],[217,5,150]],ridge:[[255,55,60],[345,14,-46]],hub:[[80,28,125],[110,3,78]]};
-function go(k){tw={t:0,p0:cam.position.clone(),t0:ctl.target.clone(),p1:new THREE.Vector3(...views[k][0]),t1:new THREE.Vector3(...views[k][1])}}
+const views={
+  over:[[-40,330,380],[80,0,40]],
+  dam:[[-85,55,45],[-12,4,-20]],
+  plat:[[140,95,290],[217,5,150]],
+  ridge:[[255,55,60],[345,14,-46]],
+  hub:[[80,28,125],[110,3,78]]
+};
+const viewMeta={
+  over:{name:'Overview',tag:'COMPLEX',detail:'480+ MW Hybrid Energy Complex · Gandhi Sagar'},
+  dam:{name:'Gandhi Sagar Dam & Powerhouse',tag:'HYDROELECTRIC',detail:'514 m gravity dam · 5 × 23 MW powerhouse (57.5 MW MP share)'},
+  plat:{name:'Mandsaur Plateau Solar Park',tag:'AGRIVOLTAICS & SOLAR',detail:'140 MWp single-axis trackers + 20 MWp stilt agrivoltaics'},
+  ridge:{name:'Ridge Wind Farm',tag:'WIND ENERGY',detail:'24 × 4.2 MW hybrid towers (100.8 MW nameplate)'},
+  hub:{name:'Grid Substation & BESS',tag:'STORAGE & TRANSMISSION',detail:'220 kV double bus substation + 40 MW / 80 MWh battery'}
+};
+
+let locBannerTimer=null;
+function showLocBanner(k){
+  const meta=viewMeta[k];
+  const banner=$('loc-banner');
+  if(!banner||!meta)return;
+  $('loc-tag').textContent=meta.tag;
+  $('loc-name').textContent=meta.name;
+  $('loc-detail').textContent=meta.detail;
+  banner.classList.remove('loc-banner-hidden');
+  if(locBannerTimer)clearTimeout(locBannerTimer);
+  locBannerTimer=setTimeout(()=>{
+    banner.classList.add('loc-banner-hidden');
+  },3600);
+}
+
+// Cubic ease in-out for cinematic transitions (1.8s)
+function easeInOutCubic(x){
+  return x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2;
+}
+
+function go(k, dur, onComplete){
+  const targetView = views[k];
+  if(!targetView)return;
+  const p1 = new THREE.Vector3(...targetView[0]);
+  const t1 = new THREE.Vector3(...targetView[1]);
+  const duration = typeof dur === 'number' ? dur : 1.8; // 1.8s smooth duration
+  
+  // Highlight active camera pill in sync
+  const pills = document.querySelectorAll('.cam-pill');
+  pills.forEach(p => p.classList.toggle('cam-active', p.dataset.v === k));
+  
+  // Show location banner smoothly
+  showLocBanner(k);
+
+  // If tour card is open, animate it slightly out and in
+  const tourCard = $('tour-card');
+  if(tourCard && !$('tour-overlay').classList.contains('tour-hidden')){
+    tourCard.classList.add('card-enter');
+  }
+
+  tw = {
+    elapsed: 0,
+    duration: duration,
+    p0: cam.position.clone(),
+    t0: ctl.target.clone(),
+    p1: p1,
+    t1: t1,
+    key: k,
+    onComplete: onComplete
+  };
+}
 function update(){
 const i=Math.min(ST-1,Math.floor(t*4)),el=Math.max(0,Math.sin(Math.PI*(t-6)/12));
 const az=Math.PI*(t-6)/12;const clv=+$('cl').value;sun.position.set(Math.cos(az)*500,60+el*450*SC.elk,-120);sun.color.copy(SC.sunc);sun.intensity=(.05+.95*el)*SC.sm*(1-.55*clv);amb.intensity=(.28+.55*el)*SC.am*(1+.2*clv);
@@ -310,7 +449,27 @@ if(play){t+=dt*.4*+$('sp').value;if(t>=24)t-=24;$('tm').value=t}
 if(sim){update();
  Object.values(paths).forEach(q=>{const a=q.pt.geometry.attributes.position;for(let i=0;i<q.N;i++){if(i/q.N<q.f){q.cu.getPoint((i/q.N+ph*.1)%1,pos);a.setXYZ(i,pos.x,pos.y,pos.z)}else a.setXYZ(i,0,-999,0)}a.needsUpdate=true;q.tb.material.opacity=.06+.3*q.f});
  rotors.forEach((r,i)=>{const wf=sim.w[Math.min(ST-1,Math.floor(t*4))];r.rotation.z+=dt*(wf>1?2.2+6*wf/100:.3)*(1+i%3*.05)})}
-if(tw){tw.t=Math.min(1,tw.t+dt/1.6);const e=tw.t*tw.t*(3-2*tw.t);cam.position.lerpVectors(tw.p0,tw.p1,e);ctl.target.lerpVectors(tw.t0,tw.t1,e);if(tw.t>=1)tw=null}
+if(tw){
+  tw.elapsed += dt;
+  const progress = Math.min(1, tw.elapsed / tw.duration);
+  const ease = easeInOutCubic(progress);
+  cam.position.lerpVectors(tw.p0, tw.p1, ease);
+  ctl.target.lerpVectors(tw.t0, tw.t1, ease);
+
+  // When transition reaches ~85%, smoothly slide in tour card content
+  if(progress >= 0.85){
+    const tourCard = $('tour-card');
+    if(tourCard) tourCard.classList.remove('card-enter');
+  }
+
+  if(progress >= 1){
+    const onComplete = tw.onComplete;
+    tw = null;
+    const tourCard = $('tour-card');
+    if(tourCard) tourCard.classList.remove('card-enter');
+    if(typeof onComplete === 'function') onComplete();
+  }
+}
 if(sim&&wmat){const hn=sim.h[Math.min(ST-1,Math.floor(t*4))]/57.5;wmat.uniforms.uTR.value+=dt*.9;wmat.uniforms.uTT.value+=dt*(.6+7*hn+5*SC.mon*(.4+.6*(+$('cl').value)));if(foam)foam.offset.y+=dt*(.3+2.2*hn);if(foam2)foam2.offset.y+=dt*1.8;
  if(riv){riv.ph+=dt*(.01+.05*hn);const a=riv.rp.geometry.attributes.position;for(let i=0;i<riv.RN;i++){const u=(i/riv.RN+riv.ph)%1;riv.rc.getPoint(u,pos);const lift=u<.46?wLvl*(1-Math.max(0,Math.min(1,(u-.41)/.05))):0;a.setXYZ(i,pos.x+Math.sin(i*7)*2.2,pos.y+lift,pos.z+Math.cos(i*5)*2.2)}a.needsUpdate=true}}animLife(dt);ctl.update();R.render(S,cam);proj()}
 function size(){const w=innerWidth,h=innerHeight;R.setSize(w,h,false);cam.aspect=w/h;cam.updateProjectionMatrix()}
@@ -720,12 +879,27 @@ function showTourStep(){
   if(tourIdx<0||tourIdx>=tourSteps.length){endTour();return}
   var step=tourSteps[tourIdx];
   var lbl=$('tour-step-label'),ttl=$('tour-title'),desc=$('tour-desc'),btn=$('tour-next');
-  if(lbl)lbl.textContent='Step '+(tourIdx+1)+' of '+tourSteps.length;
-  if(ttl)ttl.textContent=step.title;
-  if(desc)desc.textContent=step.desc;
-  if(btn)btn.textContent=tourIdx===tourSteps.length-1?'Finish ✓':'Next →';
-  // Fly to the view
-  if(step.view&&views[step.view])go(step.view);
+  var tourCard=$('tour-card');
+  
+  // Animate card content transition: fade/slide out slightly, update, fade/slide in
+  if(tourCard)tourCard.classList.add('card-enter');
+  
+  setTimeout(function(){
+    if(lbl)lbl.textContent='Step '+(tourIdx+1)+' of '+tourSteps.length;
+    if(ttl)ttl.textContent=step.title;
+    if(desc)desc.textContent=step.desc;
+    if(btn)btn.textContent=tourIdx===tourSteps.length-1?'Finish ✓':'Next →';
+    
+    // Fly to view with 1.8s smooth cubic easing
+    if(step.view&&views[step.view]){
+      go(step.view, 1.8, function(){
+        if(tourCard)tourCard.classList.remove('card-enter');
+      });
+    } else {
+      if(tourCard)tourCard.classList.remove('card-enter');
+    }
+  }, 180);
+
   // Set time
   if(typeof step.time==='number'){t=step.time;$('tm').value=t;play=false;$('pl').textContent='▶'}
 }
@@ -779,15 +953,17 @@ var autoTourIdx=0;
     }
     btn.classList.add('touring');
     autoTourIdx=0;
-    go(autoTourViews[autoTourIdx]);
+    go(autoTourViews[autoTourIdx], 2.0);
     // Highlight active cam pill
     var pills=document.querySelectorAll('.cam-pill');
     pills.forEach(function(p){p.classList.toggle('cam-active',p.dataset.v===autoTourViews[autoTourIdx])});
+    
+    // Cycle every 6.5s (2.0s transition + 4.5s observation)
     autoTourTimer=setInterval(function(){
       autoTourIdx=(autoTourIdx+1)%autoTourViews.length;
-      go(autoTourViews[autoTourIdx]);
+      go(autoTourViews[autoTourIdx], 2.0);
       pills.forEach(function(p){p.classList.toggle('cam-active',p.dataset.v===autoTourViews[autoTourIdx])});
-    },5000);
+    },6500);
   };
 })();
 
@@ -857,10 +1033,11 @@ var autoTourIdx=0;
 
   if(infoClose)infoClose.onclick=function(){if(infoCard)infoCard.style.display='none'};
 
-  // Throttle raycaster to ~10 Hz
+  // Throttle raycaster to ~10 Hz and pause during camera transitions
   var lastRayTime=0;
 
   cv.addEventListener('mousemove',function(e){
+    if(tw)return; // Don't raycast while camera is interpolating smoothly
     var now=performance.now();
     if(now-lastRayTime<100)return;
     lastRayTime=now;
@@ -900,6 +1077,7 @@ var autoTourIdx=0;
   });
 
   cv.addEventListener('click',function(e){
+    if(tw)return; // Don't trigger clicks during camera transitions
     var rect=cv.getBoundingClientRect();
     mouse.x=((e.clientX-rect.left)/rect.width)*2-1;
     mouse.y=-((e.clientY-rect.top)/rect.height)*2+1;
