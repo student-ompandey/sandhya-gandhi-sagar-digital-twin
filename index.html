@@ -89,11 +89,11 @@
   <div class="tele-section">
     <div class="section-label">Generation</div>
     <div class="tele-row">
-      <span class="tele-label"><span class="indicator" style="--c:var(--solar)"></span>Solar → Industry</span>
+      <span class="tele-label"><span class="indicator" style="--c:var(--solar)"></span>Solar → Industry <small class="text-dim" style="font-size:9.5px;display:block">28.0 MWp (22 Tracker + 6 Agri)</small></span>
       <b class="tele-value" id="vs" aria-live="polite">0 MW</b>
     </div>
     <div class="tele-row">
-      <span class="tele-label"><span class="indicator" style="--c:var(--wind)"></span>Wind</span>
+      <span class="tele-label"><span class="indicator" style="--c:var(--wind)"></span>Wind Generation <small class="text-dim" style="font-size:9.5px;display:block">21.0 MW (5 × 4.2 MW)</small></span>
       <b class="tele-value" id="vw">0 MW</b>
     </div>
   </div>
@@ -106,7 +106,7 @@
       <b class="tele-value" id="vh">0 MW</b>
     </div>
     <div class="tele-row">
-      <span class="tele-label"><span class="indicator" style="--c:var(--bess)"></span>Battery</span>
+      <span class="tele-label"><span class="indicator" style="--c:var(--bess)"></span>Battery (20 MW / 40 MWh)</span>
       <b class="tele-value" id="vb">0 MW</b>
     </div>
     <div class="soc-row">
@@ -129,10 +129,10 @@
 
   <!-- Evening Block -->
   <div class="tele-section">
-    <div class="section-label">Evening Block · 18:00–24:00</div>
+    <div class="section-label">Evening Block · 18:00–24:00 (60 MW Peak Target)</div>
     <div class="tele-row">
       <span class="tele-label">Delivered</span>
-      <b class="tele-value" id="vd">0 / 80 MW</b>
+      <b class="tele-value" id="vd">0 / 60 MW</b>
     </div>
     <div class="tele-row">
       <span class="tele-label">Dam gates</span>
@@ -144,6 +144,35 @@
     </div>
     <div class="status-row">
       <span class="badge" id="st" title="Current operating mode" role="status" aria-live="polite">–</span>
+    </div>
+  </div>
+
+
+  <!-- Financial Metrics HUD -->
+  <div class="tele-section" style="margin-top:10px;padding-top:8px;border-top:1px solid rgba(255,255,255,0.08)">
+    <div class="section-label" style="display:flex;justify-content:space-between;align-items:center">
+      <span>Approved Financial Metrics</span>
+      <span style="font-size:9px;color:var(--accent);font-weight:600">COD Metrics</span>
+    </div>
+    <div class="tele-row" title="Total Project Cost (All-In with Policies: ₹416.19 Cr; Net Hard Cost: ₹363.10 Cr)">
+      <span class="tele-label">Total Project Cost</span>
+      <b class="tele-value" style="font-size:11.5px;color:#f8fafc">₹416.19 Cr</b>
+    </div>
+    <div class="tele-row" title="Net Hard Cost after policy subsidies: ₹363.10 Crores">
+      <span class="tele-label" style="padding-left:8px;font-size:10px;color:var(--text-dim)">↳ Net Hard Cost</span>
+      <b class="tele-value" style="font-size:11px;color:var(--text-dim)">₹363.10 Cr</b>
+    </div>
+    <div class="tele-row" title="Net Cash Equity required at COD: ₹108.03 Crores">
+      <span class="tele-label">Net Cash Equity</span>
+      <b class="tele-value" style="font-size:11.5px;color:#38bdf8">₹108.03 Cr</b>
+    </div>
+    <div class="tele-row" title="Post-Tax Equity IRR: 20.38% · Payback Year 5 · Minimum DSCR 1.58×">
+      <span class="tele-label">Post-Tax Equity IRR</span>
+      <b class="tele-value" style="font-size:11.5px;color:#34d399">20.38%</b>
+    </div>
+    <div class="tele-row" style="font-size:10px;color:var(--text-dim);margin-top:2px">
+      <span>Payback: <b style="color:#f8fafc">Yr 5</b> · Min DSCR: <b style="color:#f8fafc">1.58×</b></span>
+      <span style="color:#fbbf24" title="Central MoP/PSDF VGF Grant: ₹7.20 Cr">VGF: ₹7.20 Cr</span>
     </div>
   </div>
 
@@ -165,11 +194,11 @@
       <button id="ly-all" type="button">Show all</button>
       <button id="ly-none" type="button">Hide all</button>
     </div>
-    <label><input type="checkbox" data-l="solar" checked aria-label="Toggle tracker solar layer"><span class="ly-dot" style="--c:var(--solar)"></span>Tracker solar 140 MWp</label>
-    <label><input type="checkbox" data-l="agri" checked aria-label="Toggle agrivoltaics layer"><span class="ly-dot" style="--c:#eab308"></span>Stilt agrivoltaics 20 MWp</label>
-    <label><input type="checkbox" data-l="surf" checked aria-label="Toggle water-surface solar layer"><span class="ly-dot" style="--c:#38bdf8"></span>Water-surface 40 MWp</label>
-    <label><input type="checkbox" data-l="wind" checked aria-label="Toggle wind turbines layer"><span class="ly-dot" style="--c:var(--wind)"></span>24 wind turbines</label>
-    <label><input type="checkbox" data-l="hub" checked aria-label="Toggle substation layer"><span class="ly-dot" style="--c:var(--bess)"></span>Substation + battery</label>
+    <label><input type="checkbox" data-l="solar" checked aria-label="Toggle tracker solar layer"><span class="ly-dot" style="--c:var(--solar)"></span>Tracker solar 22.0 MWp</label>
+    <label><input type="checkbox" data-l="agri" checked aria-label="Toggle agrivoltaics layer"><span class="ly-dot" style="--c:#eab308"></span>Stilt agrivoltaics 6.0 MWp</label>
+    <label><input type="checkbox" data-l="surf" checked aria-label="Toggle water-surface solar layer"><span class="ly-dot" style="--c:#38bdf8"></span>Tailrace reserve solar 4.0 MWp</label>
+    <label><input type="checkbox" data-l="wind" checked aria-label="Toggle wind turbines layer"><span class="ly-dot" style="--c:var(--wind)"></span>5 wind turbines (21.0 MW)</label>
+    <label><input type="checkbox" data-l="hub" checked aria-label="Toggle substation layer"><span class="ly-dot" style="--c:var(--bess)"></span>Substation + 20MW/40MWh BESS</label>
     <label><input type="checkbox" data-l="dam" checked aria-label="Toggle dam layer"><span class="ly-dot" style="--c:var(--hydro)"></span>Dam + powerhouse</label>
     <label><input type="checkbox" data-l="flow" checked aria-label="Toggle power flows layer"><span class="ly-dot" style="--c:#f59e0b"></span>Power / water flows</label>
     <label><input type="checkbox" data-l="sanct" checked aria-label="Toggle sanctuary boundary layer"><span class="ly-dot" style="--c:#10b981"></span>Sanctuary boundary</label>
@@ -184,14 +213,14 @@
   <div class="chart-header">
     <div class="chart-title-wrap">
       <h2>24h Dispatch Profile</h2>
-      <span class="chart-badge" id="chart-target-badge">Target: 80 MW (18–24h)</span>
+      <span class="chart-badge" id="chart-target-badge">Target: 60 MW (18–24h)</span>
     </div>
     <div class="chart-legend">
       <span class="leg-item"><span class="leg-box" style="--c:var(--solar)"></span>Solar</span>
       <span class="leg-item"><span class="leg-box" style="--c:var(--wind)"></span>Wind</span>
       <span class="leg-item"><span class="leg-box" style="--c:var(--hydro)"></span>Hydro</span>
       <span class="leg-item"><span class="leg-box" style="--c:var(--bess)"></span>BESS</span>
-      <span class="leg-item"><span class="leg-line"></span>80 MW</span>
+      <span class="leg-item"><span class="leg-line"></span>60 MW</span>
     </div>
   </div>
   <div class="chart-canvas-wrap">
@@ -284,11 +313,11 @@
       <h3>⚡ Key Terms</h3>
       <dl class="glossary">
         <dt>MWp</dt><dd>Megawatt-peak — maximum output of a solar installation under ideal conditions.</dd>
-        <dt>BESS</dt><dd>Battery Energy Storage System — the 40 MW / 80 MWh lithium-ion battery pack at the Hub.</dd>
+        <dt>BESS</dt><dd>Battery Energy Storage System — 20 MW / 40 MWh Grid-Forming LFP VSM battery at the Hub (with ₹7.20 Cr MoP/PSDF VGF grant).</dd>
         <dt>SOC</dt><dd>State of Charge — how full the battery is, as a percentage (0–100%).</dd>
-        <dt>Evening Block</dt><dd>The 18:00–24:00 firm power window: 80 MW must be delivered to the grid.</dd>
+        <dt>Evening Block</dt><dd>The 18:00–24:00 firm power window: 60 MW peak block delivered at 100% availability using Wind + BESS + Water-Banked Hydro.</dd>
         <dt>Dispatch</dt><dd>Scheduled release of power from a generator (hydro, battery, etc.) to the grid.</dd>
-        <dt>Reliability</dt><dd>% of the evening block hours where the 80 MW target is met. Target: ≥96%.</dd>
+        <dt>Reliability</dt><dd>% of the evening block hours where the 60 MW target is met. Target: 100.0% availability.</dd>
         <dt>Water Bank</dt><dd>MWh of hydro energy conserved by day (when solar replaces hydro), available at dusk.</dd>
       </dl>
     </div>
@@ -305,7 +334,7 @@
     </div>
     <div class="help-section">
       <h3>🌍 Why This Matters</h3>
-      <p class="why-text">India's power grid needs <b>firm, schedulable renewable energy</b> to replace coal. By combining solar (daytime), wind (nighttime), dam hydro (evening peak), and a battery buffer, SANDHYA demonstrates that a hybrid park at Gandhi Sagar can guarantee <b>80 MW of clean, dispatchable power</b> every evening — without building new fossil plants. The digital twin lets planners, investors, and regulators explore "what-if" scenarios before committing capital.</p>
+      <p class="why-text">India's power grid needs <b>firm, schedulable renewable energy</b> to replace coal. By combining solar (daytime), wind (nighttime), dam hydro (evening peak), and a battery buffer, SANDHYA demonstrates that a hybrid park at Gandhi Sagar can guarantee <b>60 MW evening peak block (18:00–24:00) of clean, dispatchable power</b> — without building new fossil plants. The digital twin lets planners, investors, and regulators explore "what-if" scenarios before committing capital.</p>
     </div>
     <div class="help-section">
       <h3>ℹ️ About</h3>

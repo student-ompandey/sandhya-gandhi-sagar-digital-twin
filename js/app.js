@@ -252,22 +252,26 @@ pv(rect(1010,610,1350,830),6.6,26,1.3,T1,0x1c4ee0,'solar',0,0xffc83d,0x8d96a5,fa
 const ar=rect(1400,560,1590,780);pv(ar,10.5,26,4.6,T2,0x0a5a70,'agri',1,0x8cff6a,0x6f8f4a,true);
 const sr=rect(600,640,690,760),sf=pv(sr,6,14,0,T3,0x1a5a9a,'surf',0,0x7cc6ff,null,false);panels.filter(p=>p.im===sf).forEach(p=>p.y=WY+.45);
 const sq=new THREE.Line(new THREE.BufferGeometry().setFromPoints([[sr[0],sr[1]],[sr[2],sr[1]],[sr[2],sr[3]],[sr[0],sr[3]],[sr[0],sr[1]]].map(p=>new THREE.Vector3(p[0],WY+.8,p[1]))),new THREE.LineDashedMaterial({color:0x7cc6ff,dashSize:2,gapSize:2}));sq.computeLineDistances();L('surf').add(sq);
-q=P(645,700);tag('⑤ 40 MWp water-surface solar — CONDITIONAL','tailrace · outside sanctuary · site not yet confirmed','#7cc6ff',q[0],gy(q[0],q[1])+14,q[1]);
-q=P(1180,720);solI=tag('② 140 MWp tracker solar farm','cobalt rows · gold fence','#ffc83d',q[0],gy(q[0],q[1])+18,q[1]).querySelector('i');
-q=P(1495,670);tag('② 20 MWp stilt agrivoltaics','4.6 m stilts · teal panels · crops beneath','#8cff6a',q[0],gy(q[0],q[1])+15,q[1]);
+q=P(645,700);tag('⑤ Tailrace solar zone (reserve)','outside sanctuary bounds · optional expansion','#7cc6ff',q[0],gy(q[0],q[1])+14,q[1]);
+q=P(1180,720);solI=tag('② 22.0 MWp tracker solar farm','single-axis trackers · 64.5 MU/yr · cobalt rows','#ffc83d',q[0],gy(q[0],q[1])+18,q[1]).querySelector('i');
+q=P(1495,670);tag('② 6.0 MWp stilt agrivoltaics','4.6 m stilts · teal panels · dual land use','#8cff6a',q[0],gy(q[0],q[1])+15,q[1]);
 // ===== WIND =====
-const poly2=[[1180,470],[1330,420],[1480,380],[1610,335]],rw=[[],[]],cm=mat(0xd6d3c9),sm=mat(0xf6f8fa),bm=mat(0xffffff);
-for(let r=0;r<2;r++)for(let k=0;k<12;k++){const f=k/11*3,i=Math.min(2,Math.floor(f)),t=f-i,a=poly2[i],b=poly2[i+1];rw[r].push(P(a[0]+(b[0]-a[0])*t+r*(-16),a[1]+(b[1]-a[1])*t+r*30))}
-rw.forEach((row,ri)=>{L('wind').add(new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(row.map(p=>new THREE.Vector3(p[0],gy(p[0],p[1])+.2,p[1]))),60,.55,5),mat(0xb8ab94)));
-row.forEach((p,k)=>{const [x,z]=p,g=new THREE.Group();g.position.set(x,HM(x,z),z);g.rotation.y=.55;
+// Approved config: exactly 5 units × 4.2 MW = 21.0 MW Total on 150m hybrid towers
+// 150 m tower scaling in scene: 60 m precast concrete lower base + 90 m tubular steel upper shaft
+const windCoords=[[1190,465],[1285,435],[1380,405],[1480,375],[1580,345]].map(p=>P(p[0],p[1])),cm=mat(0xd6d3c9),sm=mat(0xf6f8fa),bm=mat(0xffffff);
+L('wind').add(new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(windCoords.map(p=>new THREE.Vector3(p[0],gy(p[0],p[1])+.2,p[1]))),40,.55,5),mat(0xb8ab94)));
+windCoords.forEach((p,k)=>{const [x,z]=p,g=new THREE.Group();g.position.set(x,HM(x,z),z);g.rotation.y=.55;
 const pad=new THREE.Mesh(new THREE.CylinderGeometry(2.6,3.6,3.4,24),mat(0xa49e94));pad.position.y=-.6;
-const t1=new THREE.Mesh(new THREE.CylinderGeometry(.5,.75,6,16),cm);t1.position.y=3;const t2=new THREE.Mesh(new THREE.CylinderGeometry(.27,.5,9,16),sm);t2.position.y=10.5;
-const nc=box(.85,.85,1.7,sm);nc.position.y=15.2;const ro=new THREE.Group();ro.position.set(0,15.2,1);
+// 60 m precast concrete lower base (scaled to 6.0 height units)
+const t1=new THREE.Mesh(new THREE.CylinderGeometry(.52,.8,6.0,16),cm);t1.position.y=3.0;
+// 90 m tubular steel upper shaft (scaled to 9.2 height units)
+const t2=new THREE.Mesh(new THREE.CylinderGeometry(.27,.52,9.2,16),sm);t2.position.y=10.6;
+const nc=box(.85,.85,1.7,sm);nc.position.y=15.4;const ro=new THREE.Group();ro.position.set(0,15.4,1);
 for(let b=0;b<3;b++){const bl=box(.24,7.2,.08,bm);bl.position.y=3.6;const pv2=new THREE.Group();pv2.rotation.z=b*2.094;pv2.add(bl);ro.add(pv2)}
-const ls=new THREE.Mesh(new THREE.SphereGeometry(.28,8,8),new THREE.MeshBasicMaterial({color:0xff2a2a}));ls.position.y=15.8;blinks.push(ls);
-const rg2=new THREE.Mesh(new THREE.TorusGeometry(.62,.07,8,24),new THREE.MeshLambertMaterial({color:0xffffff,emissive:0x38d1ff,emissiveIntensity:.3}));rg2.rotation.x=Math.PI/2;rg2.position.y=6.1;lamps.push(rg2);g.add(pad,t1,t2,nc,ro,ls,rg2);rotors.push(ro);L('wind').add(g);
-if(k===5||k===11){const lab=k===5?'Row A · T01–T12':'Row B · T13–T24';tag(lab,'4.2 MW · 150 m hybrid tower','#9fe8ff',x,HM(x,z)+22,z)}})});
-q=rw[0][2];tag('③ Ridge wind farm — 24 × 4.2 MW','60 m precast concrete + 90 m steel','#38d1ff',q[0],HM(q[0],q[1])+30,q[1]);
+const ls=new THREE.Mesh(new THREE.SphereGeometry(.28,8,8),new THREE.MeshBasicMaterial({color:0xff2a2a}));ls.position.y=16.0;blinks.push(ls);
+const rg2=new THREE.Mesh(new THREE.TorusGeometry(.62,.07,8,24),new THREE.MeshLambertMaterial({color:0xffffff,emissive:0x38d1ff,emissiveIntensity:.3}));rg2.rotation.x=Math.PI/2;rg2.position.y=6.0;lamps.push(rg2);g.add(pad,t1,t2,nc,ro,ls,rg2);rotors.push(ro);L('wind').add(g);
+tag('WTG-0'+(k+1)+' · 4.2 MW','150 m hybrid tower · 60m concrete + 90m steel','#9fe8ff',x,HM(x,z)+22,z)});
+q=windCoords[2];tag('③ Ridge Wind Farm — 5 × 4.2 MW (21.0 MW Total on 150m Towers)','60 m precast concrete + 90 m steel · 63.4 MU/yr','#38d1ff',q[0],HM(q[0],q[1])+30,q[1]);
 // ===== HUB =====
 const [hx,hz]=P(1000,585),hg=new THREE.Group(),hy=gy(hx,hz);hg.position.set(hx,hy,hz);L('hub').add(hg);
 const yd=box(26,.4,20,mat(0x8a8e93));yd.position.y=.2;hg.add(yd);
@@ -276,7 +280,7 @@ const cr=box(7,3.2,4.4,mat(0xe6e0d2));cr.position.set(-8,2,-6);const dish=new TH
 for(let r=0;r<2;r++)for(let i=0;i<4;i++){const bt=box(2.6,2.2,5,new THREE.MeshLambertMaterial({color:0xe9f5f2,emissive:0x14c4a0}));bt.position.set(-9+i*3,1.3,5+r*0);bt.position.z=r?7.5:3.5;hg.add(bt);batt.push(bt)}
 for(let i=0;i<3;i++){const a=box(.3,7,.3,mat(0x333)),b=a.clone(),c=box(4,.3,.3,mat(0x333));a.position.set(11,3.5,-8+i*5);b.position.set(11,3.5,-6+i*5);c.position.set(11,7,-7+i*5);hg.add(a,b,c)}
 tag('④ Hub — 220 kV substation','control room · 3 transformers · double bus','#ffd27a',hx,hy+14,hz);
-tag('40 MW / 80 MWh grid-forming battery','glow = state of charge','#2ee6a0',hx-4.5,hy+7,hz+5.5);
+tag('20 MW / 40 MWh Grid-Forming LFP BESS','VSM battery · ₹7.20 Cr MoP/PSDF VGF grant','#2ee6a0',hx-4.5,hy+7,hz+5.5);
 // ===== TRANSMISSION =====
 const gx=P(1625,545),ptsE=[[hx+18,hz+4],P(1070,545),P(1380,545),gx],ex=hvp(ptsE,17,40),tie=hvp([[sy.x,sy.z],[hx-16,hz-6]],12,40);
 [-1,1].forEach(sd=>{const v=[];for(let k=0;k<ptsE.length-1;k++){const a=ptsE[k],b=ptsE[k+1],d=Math.hypot(b[0]-a[0],b[1]-a[1]),nx=-(b[1]-a[1])/d*6*sd,nz=(b[0]-a[0])/d*6*sd;for(let t=0;t<=20;t++){const x=a[0]+(b[0]-a[0])*t/20+nx,z=a[1]+(b[1]-a[1])*t/20+nz;v.push(new THREE.Vector3(x,gy(x,z)+.6,z))}}const l=new THREE.Line(new THREE.BufferGeometry().setFromPoints(v),new THREE.LineDashedMaterial({color:0xffa94d,dashSize:3,gapSize:2}));l.computeLineDistances();L('line').add(l)});
@@ -332,19 +336,52 @@ const dp=new Float32Array(360*3);for(let k=0;k<360;k++)dp.set([-100+Math.random(
 {const a=P(905,505),b=P(1530,495);tag('📍 Dam staff colony','approx. position · matches satellite view','#bbb',a[0],gy(a[0],a[1])+10,a[1],true);tag('📍 Farm hamlet (typical)','farmers who tend the agrivoltaic crops','#bbb',b[0],gy(b[0],b[1])+10,b[1],true)}
 }
 // ---------- SIMULATION ----------
+// Final approved configuration:
+// Solar: 28.0 MWp total (22.0 MWp Single-Axis Trackers + 6.0 MWp Stilt Agrivoltaics)
+// Wind: 5 × 4.2 MW = 21.0 MW Total on 150m hybrid towers
+// BESS: 20 MW / 40 MWh Grid-Forming LFP VSM battery (₹7.20 Cr MoP/PSDF VGF grant)
+// Hydro: 57.5 MW Madhya Pradesh Share (Gandhi Sagar Dam 2.5 Francis units)
+// Evening Firm Block Target: 60 MW Evening Peak Block (18:00–24:00 IST at 100% availability)
+// Diurnal Generation: 50:50 diurnal balance (~64.5 MU solar + ~63.4 MU wind)
 const ST=96,SK={summer:1,monsoon:.5,winter:.78},WK={summer:.55,monsoon:1.35,winter:.8};
 let sim=null;
 function run(){
-const se=$('se').value,cl=+$('cl').value,wx=+$('wi').value,mwp=140+20+(layers.surf&&layers.surf.visible?40:0),a={s:[],w:[],h:[],b:[],d:[],c:[],q:[]};
-const wind=h=>{const v=8.2*WK[se]*wx*(1+.22*Math.cos(2*Math.PI*(h-22)/24))+.9*Math.sin(h*2.1);return 100*Math.min(1,Math.pow(Math.max(0,(v-3)/8),3))};
-const sol=h=>h<6.5||h>17.5?0:mwp*.85*SK[se]*(1-.75*cl)*Math.pow(Math.sin(Math.PI*(h-6.5)/11),1.2)*(1-.12*cl*Math.sin(h*7));
-let E=0;for(let i=0;i<ST;i++){const h=i/4;if(h>=18)E+=Math.min(57.5,Math.max(0,80-wind(h)))*.25}
-const r=Math.max(0,Math.min(57.5,(411-E)/6.5));let soc=60,bank=0,mn=0;
+const se=$('se').value,cl=+$('cl').value,wx=+$('wi').value;
+const mwp=22.0+6.0+(layers.surf&&layers.surf.visible?4.0:0); // Approved 28.0 MWp solar
+const windCap=21.0; // 5 × 4.2 MW = 21.0 MW
+const eveningTarget=60.0; // Approved 60 MW evening firm peak block
+const battMaxP=20.0; // 20 MW inverter
+const battCap=40.0; // 40 MWh capacity
+const a={s:[],w:[],h:[],b:[],d:[],c:[],q:[]};
+
+// 21.0 MW wind power curve calibrated for ~63.4 MU/yr (CF ~34.5%)
+const wind=h=>{const v=8.2*WK[se]*wx*(1+.22*Math.cos(2*Math.PI*(h-22)/24))+.9*Math.sin(h*2.1);return windCap*Math.min(1,Math.pow(Math.max(0,(v-3)/8),3))};
+// 28.0 MWp solar generation calibrated for ~64.5 MU/yr (CF ~26.3% with single-axis tracking)
+const sol=h=>h<6.5||h>17.5?0:mwp*.96*SK[se]*(1-.75*cl)*Math.pow(Math.sin(Math.PI*(h-6.5)/11),1.15)*(1-.12*cl*Math.sin(h*7));
+
+let E=0;for(let i=0;i<ST;i++){const h=i/4;if(h>=18)E+=Math.min(57.5,Math.max(0,eveningTarget-wind(h)))*.25}
+const r=Math.max(0,Math.min(57.5,(308-E)/6.5));let soc=30.0,bank=0,mn=0; // soc starts at 30 MWh (75% of 40 MWh)
 for(let i=0;i<ST;i++){const h=i/4,w=wind(h),ev=h>=18;let hy=0,bt=0,dl=0;
- if(ev){hy=Math.min(57.5,Math.max(0,80-w));const df=Math.max(0,80-w-hy);bt=Math.min(df,40,(soc-12)*4);soc-=bt*.25;dl=Math.min(80,w+hy+bt)}
- else{if(h<6.5)hy=r;if((h<6.5||h>=17.5)&&w>25&&soc<72){const ch=Math.min(20,(72-soc)*4);bt=-ch;soc+=ch*.25*.95}}
- bank+=(17.1-hy)*.25;mn=Math.min(mn,bank);a.s.push(sol(h));a.w.push(w);a.h.push(hy);a.b.push(bt);a.d.push(dl);a.c.push(soc);a.q.push(bank)}
-a.q=a.q.map(x=>x-mn);a.qmax=Math.max(...a.q,1);a.rel=a.d.slice(72).reduce((x,y)=>x+y,0)/(80*24);sim=a}
+ if(ev){
+   hy=Math.min(57.5,Math.max(0,eveningTarget-w));
+   const df=Math.max(0,eveningTarget-w-hy);
+   bt=Math.min(df,battMaxP,(soc-4.0)*4); // retain 10% reserve (4 MWh)
+   soc-=bt*.25;
+   dl=Math.min(eveningTarget,w+hy+bt);
+ } else {
+   if(h<6.5)hy=r;
+   // Daytime / late evening charge window: charge battery up to 36 MWh (90% SOC)
+   if((h<6.5||h>=17.5)&&w>6.0&&soc<36.0){
+     const ch=Math.min(12.0,(36.0-soc)*4);
+     bt=-ch;
+     soc+=ch*.25*.95;
+   }
+ }
+ bank+=(17.1-hy)*.25;mn=Math.min(mn,bank);
+ a.s.push(sol(h));a.w.push(w);a.h.push(hy);a.b.push(bt);a.d.push(dl);a.c.push(soc);a.q.push(bank);
+}
+a.q=a.q.map(x=>x-mn);a.qmax=Math.max(...a.q,1);
+a.rel=a.d.slice(72).reduce((x,y)=>x+y,0)/(eveningTarget*24);sim=a}
 // ---------- UI / LOOP ----------
 let t=12,play=false,tw=null;const dummy=new THREE.Object3D(),pos=new THREE.Vector3();
 const views={
@@ -355,11 +392,11 @@ const views={
   hub:[[80,28,125],[110,3,78]]
 };
 const viewMeta={
-  over:{name:'Overview',tag:'COMPLEX',detail:'480+ MW Hybrid Energy Complex · Gandhi Sagar'},
-  dam:{name:'Gandhi Sagar Dam & Powerhouse',tag:'HYDROELECTRIC',detail:'514 m gravity dam · 5 × 23 MW powerhouse (57.5 MW MP share)'},
-  plat:{name:'Mandsaur Plateau Solar Park',tag:'AGRIVOLTAICS & SOLAR',detail:'140 MWp single-axis trackers + 20 MWp stilt agrivoltaics'},
-  ridge:{name:'Ridge Wind Farm',tag:'WIND ENERGY',detail:'24 × 4.2 MW hybrid towers (100.8 MW nameplate)'},
-  hub:{name:'Grid Substation & BESS',tag:'STORAGE & TRANSMISSION',detail:'220 kV double bus substation + 40 MW / 80 MWh battery'}
+  over:{name:'Overview',tag:'COMPLEX',detail:'28 MWp Solar · 21 MW Wind · 20 MW/40 MWh BESS · 57.5 MW Hydro'},
+  dam:{name:'Gandhi Sagar Dam & Powerhouse',tag:'HYDROELECTRIC',detail:'514 m gravity dam · 57.5 MW MP share · Water-banking firming'},
+  plat:{name:'Mandsaur Solar Park',tag:'SOLAR & AGRIVOLTAICS',detail:'28.0 MWp (22 MWp Single-Axis Trackers + 6 MWp Stilt Agrivoltaics)'},
+  ridge:{name:'Ridge Wind Farm',tag:'WIND ENERGY',detail:'5 × 4.2 MW (21.0 MW Total on 150m Hybrid Towers)'},
+  hub:{name:'Grid Substation & BESS',tag:'STORAGE & TRANSMISSION',detail:'220 kV hub · 20 MW / 40 MWh Grid-Forming LFP VSM BESS (₹7.20 Cr VGF)'}
 };
 
 let locBannerTimer=null;
@@ -419,16 +456,16 @@ const az=Math.PI*(t-6)/12;const clv=+$('cl').value;sun.position.set(Math.cos(az)
 const k=Math.pow(el,.4),sky=new THREE.Color(0x060b16).lerp(SC.sky.clone().lerp(new THREE.Color(0x56606a),clv*(.35+.3*SC.mon)),k);if(t>17&&t<19.2||t>5.2&&t<7)sky.lerp(new THREE.Color(0xe08a5a),.35);S.background=sky;S.fog.color.copy(sky);
 const s=sim.s[i],w=sim.w[i],h=sim.h[i],b=sim.b[i],d=sim.d[i],ev=t>=18;
 $('clk').textContent=String(Math.floor(t)).padStart(2,'0')+':'+String(Math.floor(t%1*60)).padStart(2,'0')+' · '+({summer:'☀ Summer',monsoon:'🌧 Monsoon',winter:'❄ Winter'})[$('se').value];
-$('vs').textContent=s.toFixed(0)+' MW';$('vw').textContent=w.toFixed(0)+' MW';$('vh').textContent=h.toFixed(1)+' MW';$('vb').textContent=(b>=0?'+':'')+b.toFixed(0)+' MW';
-$('vd').textContent=(ev?d.toFixed(0):'–')+' / 80 MW';$('vq').textContent=sim.q[i].toFixed(0)+' MWh';$('bq').style.width=(100*sim.q[i]/sim.qmax)+'%';
-const soc=sim.c[i]/80*100;$('vc').textContent=soc.toFixed(0)+'%';$('bc').style.width=soc+'%';
-const st=$('st');if(ev){const ok=d>=78.4;st.textContent=ok?'BLOCK MET':'DEGRADED';st.style.color=ok?'var(--em)':'#ff7a59'}else if(t>=17.5){st.textContent='PRE-POSITION';st.style.color='var(--gold)'}else if(t>=6.5){st.textContent='SOLAR · WATER HELD';st.style.color='var(--gold)'}else{st.textContent='WIND NIGHT';st.style.color='var(--cy)'}
+$('vs').textContent=s.toFixed(1)+' MW';$('vw').textContent=w.toFixed(1)+' MW';$('vh').textContent=h.toFixed(1)+' MW';$('vb').textContent=(b>=0?'+':'')+b.toFixed(1)+' MW';
+$('vd').textContent=(ev?d.toFixed(1):'–')+' / 60 MW';$('vq').textContent=sim.q[i].toFixed(0)+' MWh';$('bq').style.width=(100*sim.q[i]/sim.qmax)+'%';
+const soc=(sim.c[i]/40.0)*100;$('vc').textContent=soc.toFixed(0)+'%';$('bc').style.width=soc+'%';
+const st=$('st');if(ev){const ok=d>=59.0;st.textContent=ok?'BLOCK MET (60 MW)':'DEGRADED';st.style.color=ok?'var(--em)':'#ff7a59'}else if(t>=17.5){st.textContent='PRE-POSITION';st.style.color='var(--gold)'}else if(t>=6.5){st.textContent='SOLAR · WATER HELD';st.style.color='var(--gold)'}else{st.textContent='WIND NIGHT';st.style.color='var(--cy)'}
 $('vr').textContent=(sim.rel*100).toFixed(1)+'%';$('vg').textContent=h/57.5>.03?'OPEN '+Math.round(h/57.5*100)+'%':'CLOSED';$('vl').textContent=(lvl>=0?'+':'')+(lvl*10).toFixed(1)+' m '+(h<17.1?'▲':'▼');
 const tilt=el>0?Math.max(-1.05,Math.min(1.05,(t-12)*.17)):0;
 panels.forEach(p=>{dummy.position.set(p.x,p.y,p.z);dummy.rotation.set(0,0,(p.s?tilt*.8:tilt)+p.j+Math.sin(ph*1.6+p.x*.25)*.012*(.3+sim.w[i]/100));dummy.updateMatrix();p.im.setMatrixAt(p.k,dummy.matrix)});
 const seen=new Set(panels.map(p=>p.im));seen.forEach(im=>im.instanceMatrix.needsUpdate=true);
-batt.forEach(m=>m.material.emissiveIntensity=.2+soc/60);lamps.forEach(m=>m.material.emissiveIntensity=el<.12?2.2:.05);pens.forEach(m=>m.material.emissiveIntensity=h/57.5*1.6);if(gauge)gauge.scale.y=.03+.97*sim.q[i]/sim.qmax;blinks.forEach(m=>m.visible=Math.floor(ph*1.3)%2===0);const sf=s/200;if(solMat){solMat.emissiveIntensity=.5+1.4*sf;solGlow.material.opacity=.05+.3*sf;solBeam.material.opacity=.03+.22*sf}if(solI)solI.textContent='☀ '+s.toFixed(0)+' MW live · cobalt rows · gold fence';if(sheetM){sheetM.visible=SC.mon>.3;sheetM.material.opacity=.3+.6*SC.mon*(.4+.6*clv)}if(foamM)foamM.material.opacity=.2+.75*h/57.5;if(wmat){wmat.uniforms.uDay.value=.15+.85*el;wmat.uniforms.uSun.value.copy(sun.position).normalize();wmat.uniforms.uSky.value.copy(S.background)}
-const fr={solar:s/200,wind:w/100,hydro:h/57.5,exp:(s+(ev?d:0)+(!ev?w:0))/220};
+batt.forEach(m=>m.material.emissiveIntensity=.2+soc/60);lamps.forEach(m=>m.material.emissiveIntensity=el<.12?2.2:.05);pens.forEach(m=>m.material.emissiveIntensity=h/57.5*1.6);if(gauge)gauge.scale.y=.03+.97*sim.q[i]/sim.qmax;blinks.forEach(m=>m.visible=Math.floor(ph*1.3)%2===0);const sf=s/28;if(solMat){solMat.emissiveIntensity=.5+1.4*sf;solGlow.material.opacity=.05+.3*sf;solBeam.material.opacity=.03+.22*sf}if(solI)solI.textContent='☀ '+s.toFixed(1)+' MW live · 22 MWp trackers';if(sheetM){sheetM.visible=SC.mon>.3;sheetM.material.opacity=.3+.6*SC.mon*(.4+.6*clv)}if(foamM)foamM.material.opacity=.2+.75*h/57.5;if(wmat){wmat.uniforms.uDay.value=.15+.85*el;wmat.uniforms.uSun.value.copy(sun.position).normalize();wmat.uniforms.uSky.value.copy(S.background)}
+const fr={solar:s/28.0,wind:w/21.0,hydro:h/57.5,exp:(s+(ev?d:0)+(!ev?w:0))/80.0};
 Object.keys(paths).forEach(k=>{const q=paths[k];q.f=Math.min(1,fr[k]);if(k==='exp'){const c=ev?0x38d1ff:0xf5c542;q.pt.material.color.set(c);q.tb.material.color.set(c)}});
 // SOC gauge arc update
 var socArc=$('soc-arc');if(socArc){var circ=2*Math.PI*20;socArc.setAttribute('stroke-dasharray',(soc/100*circ)+' '+circ)}
@@ -436,7 +473,7 @@ var socArc=$('soc-arc');if(socArc){var circ=2*Math.PI*20;socArc.setAttribute('st
 var _a;if(t>=5&&t<8)_a='#f0a040';else if(t>=8&&t<16)_a='#f5c542';else if(t>=16&&t<19.5)_a=t<17.5?'#e87040':'#a78bfa';else _a='#38d1ff';
 document.documentElement.style.setProperty('--accent',_a);document.documentElement.style.setProperty('--accent-glow',_a+'26');
 // Status badge tooltips
-var _st=$('st'),_tips={'BLOCK MET':'Evening 80 MW target is being met fully','DEGRADED':'Delivery has fallen below the 80 MW target','PRE-POSITION':'Preparing battery and hydro for the evening block','SOLAR · WATER HELD':'Solar is active — dam water being conserved for evening','WIND NIGHT':'Wind energy powering through the night'};
+var _st=$('st'),_tips={'BLOCK MET (60 MW)':'Evening 60 MW peak firm block is being met fully at 100% availability','DEGRADED':'Delivery has fallen below the 60 MW target','PRE-POSITION':'Preparing 20 MW / 40 MWh battery and hydro for the evening block','SOLAR · WATER HELD':'Solar powering day load — dam water being conserved for evening','WIND NIGHT':'Wind energy (21 MW) powering night hours'};
 if(_st)_st.title=_tips[_st.textContent]||'';
 // Slider value labels
 var _clL=$('cl-label'),_wiL=$('wi-label');
@@ -680,15 +717,15 @@ var drawDispatchChart=(function(){
     drawArea(ptsH,'rgba(45,212,191,0.60)');  // Hydro (teal)
     drawArea(ptsB,'rgba(167,139,250,0.70)'); // BESS (violet)
 
-    // 80 MW Target dashed line during evening block (18:00 - 24:00)
-    var y80=padT+chartH*(1-80/maxMW);
+    // 60 MW Target dashed line during evening block (18:00 - 24:00)
+    var y60=padT+chartH*(1-60/maxMW);
     ctx.save();
     ctx.setLineDash([4,3]);
     ctx.strokeStyle='#f87171';
     ctx.lineWidth=1.5;
     ctx.beginPath();
-    ctx.moveTo(x18,y80);
-    ctx.lineTo(w-padR,y80);
+    ctx.moveTo(x18,y60);
+    ctx.lineTo(w-padR,y60);
     ctx.stroke();
     ctx.restore();
 
@@ -745,7 +782,7 @@ var drawDispatchChart=(function(){
     var dl=sim.d[hoverStep].toFixed(0);
 
     tip.style.display='block';
-    tip.innerHTML='<b>'+timeStr+'</b> · Sol: '+s+' · Wnd: '+w_val+' · Hyd: '+hy+' · Bat: '+bt+(hoverStep>=72?' | Deliv: <b>'+dl+'/80</b>':'');
+    tip.innerHTML='<b>'+timeStr+'</b> · Sol: '+s+' · Wnd: '+w_val+' · Hyd: '+hy+' · Bat: '+bt+(hoverStep>=72?' | Deliv: <b>'+dl+'/60</b>':'');
     render();
   });
 
@@ -780,19 +817,19 @@ update=function(){
   var scenarios={
     summer:{
       season:'summer',cloud:0.10,wind:1.0,
-      summary:'Clear summer day: peak solar generation, daytime hydro conservation, stable 80 MW evening block.'
+      summary:'Clear summer day: 28 MWp solar yield (~64.5 MU/yr pace), daytime hydro conservation, stable 60 MW evening block.'
     },
     monsoon:{
       season:'monsoon',cloud:0.85,wind:1.35,
-      summary:'Monsoon week: heavy cloud cover limits solar; strong wind & full reservoir allow high hydro dispatch.'
+      summary:'Monsoon week: cloud cover limits solar; 21 MW wind (~63.4 MU/yr pace) & full reservoir guarantee 60 MW evening block.'
     },
     winter:{
       season:'winter',cloud:0.30,wind:0.60,
-      summary:'Winter calm: moderate solar, weak wind resource; battery pre-positioning critical for evening firming.'
+      summary:'Winter calm: moderate solar, weak wind; 20 MW/40 MWh LFP battery + hydro firm 60 MW peak block (100% availability).'
     },
     stress:{
       season:'winter',cloud:0.55,wind:0.40,
-      summary:'Stress test: low wind (0.4×) and high winter clouds; tests battery depletion and hydro limits.'
+      summary:'Stress test: low wind (0.4×) and high clouds; 20 MW / 40 MWh VSM battery buffers hydro to sustain 60 MW delivery.'
     }
   };
 
@@ -837,31 +874,31 @@ update=function(){
 var tourSteps=[
   {
     title:'Welcome to SANDHYA 2.1',
-    desc:'This 3D digital twin simulates a 480+ MW hybrid solar-wind-hydro-battery park at Gandhi Sagar Dam, Madhya Pradesh. The system must deliver a firm 80 MW to the grid every evening.',
+    desc:'Gandhi Sagar 3D Digital Twin: 28 MWp Solar (22 MWp tracker + 6 MWp agrivoltaics), 21 MW Wind (5 × 4.2 MW on 150m towers), 20 MW / 40 MWh Grid-Forming LFP BESS, and 57.5 MW Hydro delivering a guaranteed 60 MW evening peak block (18:00–24:00 IST).',
     view:'over',
     time:12
   },
   {
-    title:'The Dam & Hydro Powerhouse',
-    desc:'Gandhi Sagar Dam (existing) has 5 × 23 MW turbines. SANDHYA schedules MP\'s 57.5 MW share — holding water by day and releasing it precisely at dusk when demand peaks.',
+    title:'Gandhi Sagar Dam & Hydro Powerhouse',
+    desc:'514 m gravity dam with 5 × 23 MW Francis units. MP\'s 57.5 MW entitlement operates under water-banking dispatch: water is conserved by day and released at dusk to guarantee the 60 MW firm block.',
     view:'dam',
     time:18.5
   },
   {
-    title:'Solar Plateau',
-    desc:'140 MWp tracker solar + 20 MWp stilt agrivoltaics on the Mandsaur-Neemuch plateau. The solar energy powers industry directly by day — no grid dependency.',
+    title:'Mandsaur Plateau Solar Park',
+    desc:'28.0 MWp total capacity (22.0 MWp Single-Axis Trackers + 6.0 MWp Stilt Agrivoltaics) generating ~64.5 MU/year of clean electricity directly serving industrial load.',
     view:'plat',
     time:10
   },
   {
-    title:'Ridge Wind Farm',
-    desc:'24 hybrid towers × 4.2 MW = 100 MW nameplate capacity along the ridge. Wind peaks at night, providing backbone power for the evening block.',
+    title:'Ridge Wind Farm — 5 × 4.2 MW',
+    desc:'Exactly 5 high-yield turbines (21.0 MW total) on 150 m hybrid towers (60 m precast concrete + 90 m steel shaft) yielding ~63.4 MU/year and creating a 50:50 diurnal balance with solar.',
     view:'ridge',
     time:22
   },
   {
-    title:'Hub: Substation & Battery',
-    desc:'The 220 kV hub ties everything together. A 40 MW / 80 MWh grid-forming battery pre-positions charge during the day and fills any gap in the evening 80 MW target.',
+    title:'Hub: 220 kV Substation & BESS',
+    desc:'Central 220 kV pooling station with 20 MW / 40 MWh Grid-Forming LFP VSM battery (incorporating ₹7.20 Cr MoP/PSDF VGF grant). Total project ₹416.19 Cr (Net: ₹363.10 Cr, Post-tax IRR: 20.38%).',
     view:'hub',
     time:17.5
   }
@@ -991,12 +1028,12 @@ var autoTourIdx=0;
 
     // Register major asset groups from layer children
     var layerDefs={
-      'solar':{name:'Solar Farm — 140 MWp Tracker',specs:'Cobalt PV panels on single-axis trackers\nCapacity: 140 MWp DC\nArea: ~2.4 km²\nGold security fence',liveKey:'s'},
-      'agri':{name:'Stilt Agrivoltaics — 20 MWp',specs:'4.6 m stilt-mounted teal panels\nCrops grow beneath\nCapacity: 20 MWp DC',liveKey:'s'},
-      'surf':{name:'Water-Surface Solar — 40 MWp',specs:'Floating PV on dam tailrace\nConditional site (outside sanctuary)\nCapacity: 40 MWp DC',liveKey:'s'},
-      'wind':{name:'Ridge Wind Farm — 100 MW',specs:'24 × 4.2 MW hybrid towers\n60 m precast concrete + 90 m steel\nNameplate: 100.8 MW',liveKey:'w'},
-      'hub':{name:'Substation & BESS Hub',specs:'220 kV double bus substation\n3 power transformers\n40 MW / 80 MWh grid-forming battery\nControl room + SCADA',liveKey:'b'},
-      'dam':{name:'Gandhi Sagar Dam',specs:'514 m gravity dam (existing)\n5 × 23 MW powerhouse\nMP share: 57.5 MW schedulable\nChampion spillway: 7 radial gates',liveKey:'h'}
+      'solar':{name:'Solar Farm — 22.0 MWp Single-Axis Trackers',specs:'Single-axis tracking PV arrays\nCapacity: 22.0 MWp DC (~50.7 MU/yr)\nArea: ~0.42 km²\nDual-string inverters + gold perimeter',liveKey:'s'},
+      'agri':{name:'Stilt Agrivoltaics — 6.0 MWp',specs:'Elevated PV on 4.6 m steel stilts\nCrops cultivated concurrently beneath\nCapacity: 6.0 MWp DC (~13.8 MU/yr)\nCombined Solar: 28.0 MWp (~64.5 MU/yr)',liveKey:'s'},
+      'surf':{name:'Tailrace Solar Reserve — 4.0 MWp',specs:'Surface array sited on tailrace canal\nStrictly outside wildlife sanctuary\nConditional deployment',liveKey:'s'},
+      'wind':{name:'Ridge Wind Farm — 5 × 4.2 MW (21.0 MW Total)',specs:'Exactly 5 × 4.2 MW wind turbine generators\n150 m hybrid towers (60m concrete base + 90m steel)\nAnnual Yield: ~63.4 MU/yr (50:50 diurnal balance)',liveKey:'w'},
+      'hub':{name:'220 kV Substation & BESS Hub',specs:'220 kV double bus pooling yard\n20 MW / 40 MWh Grid-Forming LFP VSM Battery\n₹7.20 Cr Central MoP/PSDF VGF Grant\nTotal Cost: ₹416.19 Cr (Net: ₹363.10 Cr)\nPost-tax Equity IRR: 20.38% (Min DSCR 1.58×)',liveKey:'b'},
+      'dam':{name:'Gandhi Sagar Dam & Hydro Powerhouse',specs:'514 m gravity dam (64 m height)\n5 × 23 MW Francis turbine units\nMP Bilateral Share: 57.5 MW schedulable\nWater-banking firming guarantees 60 MW block',liveKey:'h'}
     };
 
     Object.keys(layers).forEach(function(key){
