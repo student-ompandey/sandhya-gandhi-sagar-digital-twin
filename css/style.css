@@ -509,10 +509,131 @@ select{padding:4px 8px;font-size:12px;border-radius:var(--r-sm)}
 .why-text,.about-text{font-size:11px;color:var(--text-2);line-height:1.5;margin:0}
 .why-text b{color:var(--accent)}
 
+
+/* --- Live ESG & Carbon Tracker Dashboard --- */
+#esg-dashboard{
+  top:max(10px,env(safe-area-inset-top,0px));
+  right:282px;
+  width:260px;
+  padding:var(--sp-3) var(--sp-4);
+  z-index:5;
+  transition:all var(--dur) var(--ease);
+}
+.esg-header{
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-start;
+  margin-bottom:var(--sp-2);
+  gap:4px;
+}
+.esg-title-wrap h2{
+  margin:0 0 2px 0;
+  font-size:10px;
+  letter-spacing:.1em;
+  color:var(--text-2);
+}
+.esg-sub{
+  font-size:9px;
+  color:var(--em);
+  font-weight:600;
+  letter-spacing:.04em;
+  font-family:var(--mono);
+}
+.esg-toggle-btn{
+  background:transparent;
+  border:none;
+  color:var(--text-3);
+  cursor:pointer;
+  font-size:12px;
+  padding:0;
+  line-height:1;
+  transition:transform var(--dur) var(--ease);
+}
+.esg-collapsed .esg-toggle-btn{
+  transform:rotate(-90deg);
+}
+.esg-collapsed .esg-body{
+  display:none;
+}
+.esg-body{
+  transition:all var(--dur) var(--ease);
+}
+.esg-badge-wrap{
+  margin-bottom:var(--sp-2);
+  text-align:center;
+}
+.esg-badge{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  padding:3px 10px;
+  border-radius:var(--r-pill);
+  font-size:9.5px;
+  font-weight:700;
+  letter-spacing:.05em;
+  text-transform:uppercase;
+  background:rgba(46,230,160,0.12);
+  border:1px solid rgba(46,230,160,0.4);
+  color:#34d399;
+  box-shadow:0 0 10px rgba(46,230,160,0.15);
+  font-family:var(--mono);
+}
+.esg-badge-pulse{
+  width:6px;
+  height:6px;
+  border-radius:50%;
+  background:#34d399;
+  box-shadow:0 0 6px #34d399;
+  animation:esgPulse 1.8s ease-in-out infinite alternate;
+}
+@keyframes esgPulse{
+  0%{transform:scale(0.85);opacity:0.6}
+  100%{transform:scale(1.25);opacity:1}
+}
+.esg-card-stat{
+  background:var(--surface-raised);
+  border:1px solid var(--surface-border);
+  border-radius:var(--r-sm);
+  padding:var(--sp-2) var(--sp-3);
+  margin-bottom:var(--sp-2);
+}
+.esg-row{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:var(--sp-2);
+  padding:2px 0;
+}
+.esg-label{
+  font-size:11px;
+  color:var(--text-2);
+  display:flex;
+  align-items:center;
+  gap:5px;
+}
+.esg-val{
+  font-family:var(--mono);
+  font-size:12px;
+  font-weight:600;
+  font-variant-numeric:tabular-nums;
+  color:#f8fafc;
+}
+.esg-footer-note{
+  font-size:9px;
+  color:var(--text-3);
+  line-height:1.3;
+  margin-top:4px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+
 /* --- Responsive --- */
 @media(max-width:1024px){
   #chart-panel{width:min(420px,calc(100vw - 20px))}
+  #esg-dashboard{right:auto;left:10px;top:calc(max(10px,env(safe-area-inset-top,0px)) + 54px);width:230px}
   #flow-legend{display:none}
+  #esg-dashboard{display:none}
 }
 @media(max-width:760px){
   /* Mobile: panels become bottom sheets / compact */

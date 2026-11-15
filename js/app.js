@@ -479,6 +479,30 @@ if(_st)_st.title=_tips[_st.textContent]||'';
 var _clL=$('cl-label'),_wiL=$('wi-label');
 if(_clL)_clL.textContent='Cloud '+Math.round(+$('cl').value*100)+'%';
 if(_wiL)_wiL.textContent='Wind '+((+$('wi').value).toFixed(1))+'×';
+// ESG & Carbon Offset calculation (BEE CCTS / Verra, baseline 0.79 tCO2e/MWh)
+const activeGenMW = s + w + (ev ? h : 0);
+const co2RateKgMin = (activeGenMW * 0.79 * 1000) / 60;
+let cumMWh = 0;
+for(let step = 0; step <= i; step++){
+  const stepGen = sim.s[step] + sim.w[step] + (step >= 72 ? sim.h[step] : 0);
+  cumMWh += stepGen * 0.25;
+}
+const totalOffsetTons = cumMWh * 0.79;
+const carbonValInr = Math.round(totalOffsetTons * 400);
+
+const co2RateEl = $('co2-rate'), co2TodayEl = $('co2-today'), co2ValEl = $('co2-value'), esgBadgeText = $('esg-badge-text');
+if(co2RateEl) co2RateEl.textContent = co2RateKgMin.toFixed(1) + ' kg/min';
+if(co2TodayEl) co2TodayEl.textContent = totalOffsetTons.toFixed(2) + ' tCO₂e';
+if(co2ValEl) co2ValEl.textContent = '₹' + carbonValInr.toLocaleString('en-IN');
+if(esgBadgeText){
+  if(activeGenMW > 40){
+    esgBadgeText.textContent = 'ESG Grade-A+ | Peak Green Dispatch';
+  } else if(activeGenMW > 15){
+    esgBadgeText.textContent = 'ESG Grade-A | Verified Offset Active';
+  } else {
+    esgBadgeText.textContent = 'ESG Grade-A | Baseline Reserve Active';
+  }
+}
 }
 let last=performance.now(),ph=0;
 function frame(n){requestAnimationFrame(frame);const dt=Math.min(.05,(n-last)/1000);last=n;ph+=dt;
@@ -1286,6 +1310,31 @@ function toggleFullscreen(){
     // Stop auto tour
     if(autoTourTimer){clearInterval(autoTourTimer);autoTourTimer=null;var ab=$('auto-tour');if(ab)ab.classList.remove('touring')}
   };
+})();
+
+// --- Live ESG Dashboard Toggle ---
+(function(){
+  var dash = $('esg-dashboard');
+  var toggleBtn = $('esg-toggle-btn');
+  var topBtn = $('btn-esg');
+  if(!dash) return;
+  if(toggleBtn){
+    toggleBtn.addEventListener('click', function(){
+      dash.classList.toggle('esg-collapsed');
+    });
+  }
+  if(topBtn){
+    topBtn.addEventListener('click', function(){
+      if(dash.style.display === 'none'){
+        dash.style.display = '';
+        dash.classList.remove('esg-collapsed');
+      } else if(dash.classList.contains('esg-collapsed')){
+        dash.classList.remove('esg-collapsed');
+      } else {
+        dash.classList.add('esg-collapsed');
+      }
+    });
+  }
 })();
 
 // --- Help / Glossary Modal ---

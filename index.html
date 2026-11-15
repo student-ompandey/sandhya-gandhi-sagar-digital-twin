@@ -66,6 +66,7 @@
   </div>
   <div class="ttl-actions">
     <button id="theme-toggle" title="Toggle light / dark theme" aria-label="Toggle theme">◑</button>
+    <button id="btn-esg" class="util-btn" title="Toggle Live ESG & Carbon Tracker" aria-label="ESG Dashboard">🌱</button>
     <button id="btn-help" class="util-btn" title="Glossary & Help" aria-label="Help">?</button>
     <button id="btn-fullscreen" class="util-btn" title="Toggle fullscreen" aria-label="Fullscreen">⛶</button>
     <button id="btn-screenshot" class="util-btn" title="Save screenshot" aria-label="Screenshot">📷</button>
@@ -75,6 +76,58 @@
       <option value="med" selected>Med</option>
       <option value="high">High</option>
     </select>
+  </div>
+</div>
+
+
+<!-- Live ESG & Carbon Tracker (BEE CCTS / Verra) -->
+<div class="panel" id="esg-dashboard">
+  <div class="esg-header">
+    <div class="esg-title-wrap">
+      <h2>Live ESG &amp; Carbon Tracker</h2>
+      <span class="esg-sub">BEE CCTS · Verra VCS Accredited</span>
+    </div>
+    <button class="esg-toggle-btn" id="esg-toggle-btn" title="Collapse / Expand ESG Panel" aria-label="Toggle ESG details">▾</button>
+  </div>
+
+  <div class="esg-body" id="esg-body">
+    <!-- Green Badge / Compliance Status -->
+    <div class="esg-badge-wrap">
+      <span class="esg-badge" id="esg-badge">
+        <span class="esg-badge-pulse"></span>
+        <span id="esg-badge-text">ESG Grade-A | Verified Offset Active</span>
+      </span>
+    </div>
+
+    <!-- Live Carbon Stats -->
+    <div class="esg-card-stat">
+      <div class="section-label">Real-Time Decarbonization</div>
+      <div class="esg-row" title="Instantaneous kilograms of CO2 saved per minute based on regional baseline (0.79 tCO2e/MWh)">
+        <span class="esg-label"><span class="indicator" style="--c:#34d399"></span>CO₂ Offset Rate</span>
+        <b class="esg-val" id="co2-rate" style="color:#34d399">0.0 kg/min</b>
+      </div>
+      <div class="esg-row" title="Cumulative metric tons (tCO2e) of greenhouse gas emissions avoided today">
+        <span class="esg-label"><span class="indicator" style="--c:var(--accent)"></span>Total Offset Today</span>
+        <b class="esg-val" id="co2-today" style="color:#38d1ff">0.00 tCO₂e</b>
+      </div>
+      <div class="esg-row" title="Regional CEA grid emission baseline displacement factor">
+        <span class="esg-label" style="font-size:10px;color:var(--text-3)">Grid Baseline Factor</span>
+        <span style="font-family:var(--mono);font-size:10px;color:var(--text-dim)">0.79 tCO₂e/MWh</span>
+      </div>
+    </div>
+
+    <!-- Carbon Asset Value -->
+    <div class="esg-card-stat">
+      <div class="section-label">Carbon Credit Valuation</div>
+      <div class="esg-row" title="Market value generated today based on ₹400 per tCO2e (BEE CCTS / Verra benchmark)">
+        <span class="esg-label"><span class="indicator" style="--c:#fbbf24"></span>Asset Value Today</span>
+        <b class="esg-val" id="co2-value" style="color:#fbbf24">₹0</b>
+      </div>
+      <div class="esg-footer-note">
+        <span>Benchmark: ₹400/tCO₂e</span>
+        <span style="color:#34d399;font-weight:600">~₹4.04 Cr/yr</span>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -313,6 +366,9 @@
       <h3>⚡ Key Terms</h3>
       <dl class="glossary">
         <dt>MWp</dt><dd>Megawatt-peak — maximum output of a solar installation under ideal conditions.</dd>
+        
+        <dt>BEE CCTS / Verra</dt><dd>Bureau of Energy Efficiency Carbon Credit Trading Scheme & Verra Verified Carbon Standard for registered RE offsets.</dd>
+        <dt>Carbon Offset</dt><dd>Avoided grid emissions calculated at 0.79 tCO₂e per MWh of clean generation against India's regional thermal baseline.</dd>
         <dt>BESS</dt><dd>Battery Energy Storage System — 20 MW / 40 MWh Grid-Forming LFP VSM battery at the Hub (with ₹7.20 Cr MoP/PSDF VGF grant).</dd>
         <dt>SOC</dt><dd>State of Charge — how full the battery is, as a percentage (0–100%).</dd>
         <dt>Evening Block</dt><dd>The 18:00–24:00 firm power window: 60 MW peak block delivered at 100% availability using Wind + BESS + Water-Banked Hydro.</dd>
